@@ -61,12 +61,20 @@ export default function register_tag_routes(app: core.Express) {
     app.put('/tag/:id', (req: Request, res: Response) =>
     {
     let tag: Tag = req.body;
-    let id = +req.body.id;
+    let id = +req.params.id;
     if(!tags.has(id)){
         res.status(404).send({'err': 'tag with this id not found'})
     }
-    tags.set(id, tag);
-    res.status(204).send({'id': id})
+    if(tag_exists(tag.name)){
+        let tag_id = find_tag_id(tag.name);
+        res.status(400).send({'error' : `'${tag.name}' already used by id:'${tag_id}'`})
+    }
+    else
+    {
+        tag.id = id;
+        tags.set(id, tag);
+        res.status(204).send({'id': id})
+    }
     })
 
     app.delete('/tag/:id', (req: Request, res: Response) =>
