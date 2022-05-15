@@ -44,6 +44,7 @@ export default function register_tag_routes(app: core.Express) {
     } 
     else {
         let tag: Tag = req.body;
+        tag.name = tag.name.toLowerCase();
         let id: number = generate_id();
         tag.id = id;
         tags.set(id, tag);
