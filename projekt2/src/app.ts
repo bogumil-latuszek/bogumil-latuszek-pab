@@ -61,4 +61,14 @@ app.put('/note/:id', (req: Request, res: Response) =>
   res.status(204).send({'id': id})
 })
 
+app.delete('/note/:id', (req: Request, res: Response) =>
+{
+  let id = req.params.id;
+  if(!notes.has(id)){
+    res.status(404).send({'err': 'note with this id not found'})
+  }
+  notes.delete(id);
+  res.status(204).send();
+})
+
 app.listen(3000)
