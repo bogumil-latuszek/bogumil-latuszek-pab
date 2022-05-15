@@ -28,6 +28,17 @@ app.get('/note/:id', function (req: Request, res: Response) {
   }
 })
 
+app.get('/notes/', function (req: Request, res: Response) {
+  if (notes.size > 0) {
+    let note_table: Note[] = [];
+    notes.forEach((note: Note) => note_table.push(note));
+    res.status(200).send(note_table);
+  }
+  else {
+    res.status(404).send(`items not found`)
+  }
+})
+
 app.post('/note/', (req: Request, res: Response) =>
 {
   if (! req.body) {
