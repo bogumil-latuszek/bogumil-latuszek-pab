@@ -2,12 +2,13 @@ import express from 'express'
 import {Request, Response} from 'express'
 import Note from './model'
 import shortid from 'shortid';
+import register_tag_routes from './tags'
 
 const app = express()
 
 app.use(express.json())
 
-let notes: Map<string, Note> = new Map<string, Note>();  // TODO: refactor to Map<string, Note> where string is id
+let notes: Map<string, Note> = new Map<string, Note>(); 
 
 app.get('/', function (req: Request, res: Response) {
   res.send('GET Hello World')
@@ -81,5 +82,7 @@ app.delete('/note/:id', (req: Request, res: Response) =>
   notes.delete(id);
   res.status(204).send();
 })
+
+register_tag_routes(app);
 
 app.listen(3000)

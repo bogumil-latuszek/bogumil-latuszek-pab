@@ -6,3 +6,8 @@ export default interface Note {
     creationDate?: string; // data w formmacie ISO
     tags?: string[];
   }
+
+export interface Tag {
+  id?: number;
+  name: string;
+}
