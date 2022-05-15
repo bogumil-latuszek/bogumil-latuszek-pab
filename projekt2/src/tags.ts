@@ -45,10 +45,16 @@ export default function register_tag_routes(app: core.Express) {
     else {
         let tag: Tag = req.body;
         tag.name = tag.name.toLowerCase();
-        let id: number = generate_id();
-        tag.id = id;
-        tags.set(id, tag);
-        res.status(201).send({'id': id })
+        if(tag_exists(tag.name)){
+            let tag_id = find_tag_id(tag.name);
+            res.status(200).send({'id' : tag_id})
+        }
+        else{
+            let id: number = generate_id();
+            tag.id = id;
+            tags.set(id, tag);
+            res.status(201).send({'id': id })
+        }
     }
     })
 
@@ -72,4 +78,17 @@ export default function register_tag_routes(app: core.Express) {
     tags.delete(id);
     res.status(204).send();
     })
+
+    function tag_exists(name: string) {
+        let evaluation = false;
+        tags.forEach((tag: Tag) => { if(tag.name == name){evaluation = true;}} )
+        return evaluation;
+    }
+    function find_tag_id(name: string) {
+        let tag_id : number|undefined = undefined;
+        tags.forEach((tag: Tag) => { if(tag.name == name){tag_id = tag.id;}} )
+        return tag_id;
+    }
 }
+
+
