@@ -2,6 +2,7 @@ import express from 'express';
 import {Request, Response} from 'express';
 import Note, { Tag } from './model';
 import register_tag_routes from './tags';
+import { process_tags } from './tags';
 import { generate_id } from './id';
 
 const app = express()
@@ -57,6 +58,9 @@ app.post('/note/', (req: Request, res: Response) =>
     let id = generate_id(); //check if note id already exists
     note.creationDate = creation_date;
     note.id = id;
+    if (note.tags) {
+      note.tags = process_tags(note.tags)
+    }
     notes.set(id, note);
     res.status(201).send({'id': id })
   }

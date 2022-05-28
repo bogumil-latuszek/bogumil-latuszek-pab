@@ -82,12 +82,38 @@ export default function register_tag_routes(app: core.Express) {
     })
 
    
-    function find_tag_id(name: string) {
-        let tag_id : number|undefined = undefined;
-        tags.forEach((tag: Tag) => { if(tag.name == name){tag_id = tag.id;}} )
-        return tag_id;
-    }
-
 }
 
+export function process_tags(new_or_existing: Tag[]): Tag[] {
+    let new_tags: Tag[] = [];
+    new_or_existing.forEach((tag: Tag) => {
+        let new_tag: Tag;
+        new_tag = process_single_tag(tag.name);
+        new_tags.push(new_tag);
+    })
+    return new_tags;
+}
 
+function process_single_tag(tag_name: string): Tag {
+    let tag: Tag = {name: tag_name.toLowerCase()};
+    let tag_id = find_tag_id(tag.name);
+    if (tag_id != undefined) {
+        tag.id = tag_id;
+    }
+    else {
+        let id: number = generate_id();
+        tag.id = id;
+        tags.set(id, tag);
+    }
+    return tag;
+}
+
+function find_tag_id(name: string) {
+    let tag_id : number|undefined = undefined;
+    tags.forEach((tag: Tag) => { 
+        if (tag.name == name) {
+            tag_id = tag.id;
+        }
+    })
+    return tag_id;
+}
