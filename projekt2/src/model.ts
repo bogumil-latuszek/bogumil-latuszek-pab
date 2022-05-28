@@ -1,10 +1,10 @@
 
 export default interface Note {
-    id?: string;
+    id?: number;
     title: string;
     content: string;
     creationDate?: string; // data w formmacie ISO
-    tags?: string[];
+    tags?: Tag[];
   }
 
 export interface Tag {

@@ -1,14 +1,14 @@
-import express from 'express'
-import {Request, Response} from 'express'
-import Note from './model'
-import shortid from 'shortid';
-import register_tag_routes from './tags'
+import express from 'express';
+import {Request, Response} from 'express';
+import Note, { Tag } from './model';
+import register_tag_routes from './tags';
+import { generate_id } from './id';
 
 const app = express()
 
 app.use(express.json())
 
-let notes: Map<string, Note> = new Map<string, Note>(); 
+let notes: Map<number, Note> = new Map<number, Note>(); 
 
 app.get('/', function (req: Request, res: Response) {
   res.send('GET Hello World')
@@ -19,7 +19,7 @@ app.post('/', function (req: Request, res: Response) {
 })
 
 app.get('/note/:id', function (req: Request, res: Response) {
-  let id = req.params.id
+  let id = +req.params.id
   if (notes.has(id)) {
     let note = notes.get(id);
     res.status(200).send(note)
@@ -54,7 +54,7 @@ app.post('/note/', (req: Request, res: Response) =>
   else {
     let note: Note = req.body;
     let creation_date = new Date().toISOString();
-    let id = shortid.generate();
+    let id = generate_id(); //check if note id already exists
     note.creationDate = creation_date;
     note.id = id;
     notes.set(id, note);
@@ -65,7 +65,7 @@ app.post('/note/', (req: Request, res: Response) =>
 app.put('/note/:id', (req: Request, res: Response) =>
 {
   let note: Note = req.body;
-  let id = req.body.id;
+  let id = +req.body.id;
   if(!notes.has(id)){
     res.status(404).send({'err': 'note with this id not found'})
   }
@@ -75,13 +75,14 @@ app.put('/note/:id', (req: Request, res: Response) =>
 
 app.delete('/note/:id', (req: Request, res: Response) =>
 {
-  let id = req.params.id;
+  let id = +req.params.id;
   if(!notes.has(id)){
     res.status(404).send({'err': 'note with this id not found'})
   }
   notes.delete(id);
   res.status(204).send();
 })
+
 
 register_tag_routes(app);
 
