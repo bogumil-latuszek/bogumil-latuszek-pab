@@ -58,9 +58,11 @@ app.post('/note/', (req: Request, res: Response) =>
     let id = generate_id(); //check if note id already exists
     note.creationDate = creation_date;
     note.id = id;
+
     if (note.tags) {
       note.tags = process_tags(note.tags)
     }
+
     notes.set(id, note);
     res.status(201).send({'id': id })
   }
@@ -69,10 +71,15 @@ app.post('/note/', (req: Request, res: Response) =>
 app.put('/note/:id', (req: Request, res: Response) =>
 {
   let note: Note = req.body;
-  let id = +req.body.id;
+  let id = +req.params.id;
   if(!notes.has(id)){
     res.status(404).send({'err': 'note with this id not found'})
   }
+
+  if (note.tags) {
+    note.tags = process_tags(note.tags)
+  }
+
   notes.set(id, note);
   res.status(204).send({'id': id})
 })
