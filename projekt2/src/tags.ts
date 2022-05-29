@@ -6,18 +6,18 @@ import { generate_id } from './id';
 let tags: Map<number, Tag> = new Map<number, Tag>(); 
 
 export default function register_tag_routes(app: core.Express) {
-    app.get('/tags/', function (req: Request, res: Response) {
+    app.get('/tags/', (req: Request, res: Response) => {
         if (tags.size > 0) {
-        let tag_table: Tag[] = [];
-        tags.forEach((tag: Tag) => tag_table.push(tag));
-        res.status(200).send(tag_table);
+            let tag_table: Tag[] = [];
+            tags.forEach((tag: Tag) => tag_table.push(tag));
+            res.status(200).send(tag_table);
         }
         else {
-        res.status(404).send(`items not found`)
+            res.status(404).send(`items not found`)
         }
     })
     
-    app.get('/tag/:id', function (req: Request, res: Response) {
+    app.get('/tag/:id', (req: Request, res: Response) => {
         let id = +req.params.id
         if (tags.has(id)) {
             let tag = tags.get(id);
@@ -28,8 +28,7 @@ export default function register_tag_routes(app: core.Express) {
         }
     })
 
-    app.post('/tag/', (req: Request, res: Response) =>
-    {
+    app.post('/tag/', (req: Request, res: Response) => {
         if (! req.body) {
             res.status(400).send({'err': 'no data provided to create a tag'})
         }
@@ -40,10 +39,10 @@ export default function register_tag_routes(app: core.Express) {
             let tag: Tag = req.body;
             tag.name = tag.name.toLowerCase();
             let tag_id = find_tag_id(tag.name);
-            if(tag_id != undefined){
+            if (tag_id != undefined) {
                 res.status(200).send({'id' : tag_id})
             }
-            else{
+            else {
                 let id: number = generate_id();
                 tag.id = id;
                 tags.set(id, tag);
@@ -52,36 +51,31 @@ export default function register_tag_routes(app: core.Express) {
         }
     })
 
-    app.put('/tag/:id', (req: Request, res: Response) =>
-    {
+    app.put('/tag/:id', (req: Request, res: Response) => {
         let tag: Tag = req.body;
         let id = +req.params.id;
-        if(!tags.has(id)){
+        if (!tags.has(id)) {
             res.status(404).send({'err': 'tag with this id not found'})
         }
         let tag_id = find_tag_id(tag.name);
-        if(tag_id !=  undefined){
+        if (tag_id != undefined) {
             res.status(400).send({'error' : `'${tag.name}' already used by id:'${tag_id}'`})
         }
-        else
-        {
+        else {
             tag.id = id;
             tags.set(id, tag);
             res.status(204).send({'id': id})
         }
     })
 
-    app.delete('/tag/:id', (req: Request, res: Response) =>
-    {
-    let id = +req.params.id;
-    if(!tags.has(id)){
-        res.status(404).send({'err': 'tag with this id not found'})
-    }
-    tags.delete(id);
-    res.status(204).send();
+    app.delete('/tag/:id', (req: Request, res: Response) => {
+        let id = +req.params.id;
+        if (!tags.has(id)) {
+            res.status(404).send({'err': 'tag with this id not found'})
+        }
+        tags.delete(id);
+        res.status(204).send();
     })
-
-   
 }
 
 export function process_tags(new_or_existing: Tag[]): Tag[] {
