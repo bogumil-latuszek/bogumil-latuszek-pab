@@ -1,3 +1,4 @@
 {
-    "notesStoragePath": ".notes.json"
+    "notesStoragePath": ".notes.json",
+    "tagsStoragePath": ".tags.json"
 }
