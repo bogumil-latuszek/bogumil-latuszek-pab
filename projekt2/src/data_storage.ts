@@ -2,8 +2,6 @@ import Note, { Tag } from './model';
 import { generate_id } from './id';
 import fs from 'fs';
 
-
-
 interface INotesAccess {
     hasNote(id:number): boolean;
     getNote(id:number): Note | undefined;
@@ -16,20 +14,24 @@ interface INotesAccess {
 
 class InMemoryNotes implements INotesAccess {
     notes: Map<number, Note>;
-    filePath : string;
+    filePath: string;
 
     constructor() {
+        this.filePath = "";
         this.notes = new Map<number, Note>();
-        this.filePath = ".notes.json";
-        
-        this.readStorage().then(result => {
-            this.notes = this.convertJsonStringToMap(result)
-        });
+        this.readFile(".config.json").then(configText => {
+            let configObject = JSON.parse(configText)
+            let notesStoragePath = configObject["notesStoragePath"]
+            this.filePath = notesStoragePath;
+            this.readFile(notesStoragePath).then(notesUnprocessed => {
+                this.notes = this.convertJsonStringToMap(notesUnprocessed)
+            })
+        })
     }
 
-    private async readStorage(): Promise<string> {
+    private async readFile(filePath:string):Promise<string>{
         try {
-            const data = await fs.promises.readFile(this.filePath, 'utf-8');
+            const data = await fs.promises.readFile(filePath, 'utf-8');
             return data;
         } catch (err) {
             console.log(err)
