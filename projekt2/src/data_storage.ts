@@ -106,19 +106,25 @@ class InMemoryNotes implements INotesAccess {
         note.id = id;
         //processing note.tags should be done before calling this method
         this.notes.set(id, note);
+        this.save();
+        return note;
+    }
+
+    save(): void {
         let notesStringified: string = this.convertMapToJsonString(this.notes)
         this.updateStorage(notesStringified)
-        return note;
     }
 
     updateNote(note:Note): void {
         if (note.id) {
             this.notes.set(note.id, note);
+            this.save();
         }
     }
 
     deleteNote(id:number): void {
         this.notes.delete(id);
+        this.save();
     }
 }
 
@@ -216,19 +222,25 @@ class InMemoryTags implements ITagsAccess {
         let id = this.gen.generate_unique_id(this.tags);
         tag.id = id;
         this.tags.set(id, tag);
+        this.save();
+        return tag;
+    }
+
+    save(): void {
         let tagsStringified: string = this.convertMapToJsonString(this.tags)
         this.updateStorage(tagsStringified)
-        return tag;
     }
 
     updateTag(tag:Tag): void {
         if (tag.id) {
             this.tags.set(tag.id, tag);
+            this.save();
         }
     }
 
     deleteTag(id:number): void {
         this.tags.delete(id);
+        this.save();
     }
 }
 
