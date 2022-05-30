@@ -1,6 +1,9 @@
 
 node_modules
 
+# data storage for our Notes
+.notes.json
+
 # JavaScript is generated from TypeScript via npx tsc index.ts
 index.js
 
