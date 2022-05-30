@@ -1,5 +1,5 @@
 import Note, { Tag } from './model';
-import { generate_id } from './id';
+import Unique_id_generator from './id';
 import fs from 'fs';
 
 interface INotesAccess {
@@ -15,9 +15,11 @@ interface INotesAccess {
 class InMemoryNotes implements INotesAccess {
     notes: Map<number, Note>;
     filePath: string;
+    gen: Unique_id_generator;
 
     constructor() {
         this.filePath = "";
+        this.gen = new Unique_id_generator();
         this.notes = new Map<number, Note>();
         this.readFile(".config.json").then(configText => {
             let configObject = JSON.parse(configText)
@@ -53,7 +55,7 @@ class InMemoryNotes implements INotesAccess {
             let keyAsString = key.toString()
             jsonObject[keyAsString] = value  
         });
-        let jsonText = JSON.stringify(jsonObject)
+        let jsonText = JSON.stringify(jsonObject, null, 4)
         return jsonText;
     }
 
@@ -88,7 +90,7 @@ class InMemoryNotes implements INotesAccess {
     addNote(note:Note): Note {
         // update incomming note with creationDate and id fields
         let creation_date = new Date().toISOString();
-        let id = generate_id(); //check if note id already exists
+        let id = this.gen.generate_unique_id(this.notes);
         note.creationDate = creation_date;
         note.id = id;
         //processing note.tags should be done before calling this method

@@ -1,9 +1,10 @@
 import * as core from 'express-serve-static-core';
 import {Request, Response} from 'express';
 import {Tag} from './model';
-import { generate_id } from './id';
+import Unique_id_generator from './id';
 
 let tags: Map<number, Tag> = new Map<number, Tag>(); 
+let gen: Unique_id_generator = new Unique_id_generator();
 
 export default function register_tag_routes(app: core.Express) {
     app.get('/tags/', (req: Request, res: Response) => {
@@ -43,7 +44,7 @@ export default function register_tag_routes(app: core.Express) {
                 res.status(200).send({'id' : tag_id})
             }
             else {
-                let id: number = generate_id();
+                let id: number = gen.generate_unique_id(tags);
                 tag.id = id;
                 tags.set(id, tag);
                 res.status(201).send({'id': id })
@@ -95,7 +96,7 @@ function process_single_tag(tag_name: string): Tag {
         tag.id = tag_id;
     }
     else {
-        let id: number = generate_id();
+        let id: number = gen.generate_unique_id(tags);
         tag.id = id;
         tags.set(id, tag);
     }
