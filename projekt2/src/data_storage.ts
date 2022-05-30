@@ -1,5 +1,8 @@
 import Note, { Tag } from './model';
 import { generate_id } from './id';
+import fs from 'fs';
+
+
 
 interface INotesAccess {
     hasNote(id:number): boolean;
@@ -13,9 +16,52 @@ interface INotesAccess {
 
 class InMemoryNotes implements INotesAccess {
     notes: Map<number, Note>;
+    filePath : string;
 
     constructor() {
         this.notes = new Map<number, Note>();
+        this.filePath = ".notes.json";
+        
+        this.readStorage().then(result => {
+            this.notes = this.convertJsonStringToMap(result)
+        });
+    }
+
+    private async readStorage(): Promise<string> {
+        try {
+            const data = await fs.promises.readFile(this.filePath, 'utf-8');
+            return data;
+        } catch (err) {
+            console.log(err)
+            return "";
+        }
+    }
+
+    private async updateStorage(dataToSave: string): Promise<void> {
+        try {
+            await fs.promises.writeFile(this.filePath, dataToSave );
+        } catch (err) {
+            console.log(err)
+        }
+    }
+    
+    convertMapToJsonString(notes: Map<number, Note>): string {
+        let jsonObject: {[k: string]: Note} = {};  
+        notes.forEach((value, key) => {
+            let keyAsString = key.toString()
+            jsonObject[keyAsString] = value  
+        });
+        let jsonText = JSON.stringify(jsonObject)
+        return jsonText;
+    }
+
+    convertJsonStringToMap(jsonString: string): Map<number, Note> {
+        let jsonObject = JSON.parse(jsonString)
+        let map = new Map<number, Note>()  
+        for (var key in jsonObject) {  
+           map.set(+key, jsonObject[key])  
+        }  
+        return map;
     }
 
     hasNote(id:number): boolean {
@@ -45,6 +91,8 @@ class InMemoryNotes implements INotesAccess {
         note.id = id;
         //processing note.tags should be done before calling this method
         this.notes.set(id, note);
+        let notesStringified: string = this.convertMapToJsonString(this.notes)
+        this.updateStorage(notesStringified)
         return note;
     }
 
