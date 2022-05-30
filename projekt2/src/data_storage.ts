@@ -19,6 +19,7 @@ interface ITagsAccess {
     getTagsCount(): number;
     getAllTags(): Tag[];
     addTag(note:Tag): Tag;
+    save(): void;
     updateTag(note:Tag): void;
     deleteTag(id:number): void;
 }

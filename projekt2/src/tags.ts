@@ -80,6 +80,7 @@ export function process_tags(new_or_existing: Tag[]): Tag[] {
         let full_tag: Tag = process_single_tag(tag.name);
         tags_set.push(full_tag);
     })
+    tags.save()  // fix for corrupted JSON from races in fs.promises.writeFile()
     return tags_set;
 }
 
