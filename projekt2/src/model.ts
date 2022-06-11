@@ -11,3 +11,8 @@ export interface Tag {
   id?: number;
   name: string;
 }
+
+export interface User {
+  name: string;
+  password: string;
+}

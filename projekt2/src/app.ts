@@ -4,6 +4,7 @@ import Note, { Tag } from './model';
 import tags_router from './tags';
 import { process_tags } from './tags';
 import notes_router from './notes';
+import users_router from './auth';
 
 const app = express()
 
@@ -23,5 +24,7 @@ app.post('/', (req: Request, res: Response) => {
 app.use('/', tags_router)
 
 app.use('/', notes_router)
+
+app.use('/', users_router)
 
 app.listen(3000)

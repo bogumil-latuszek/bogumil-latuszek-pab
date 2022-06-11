@@ -4,6 +4,7 @@ node_modules
 # data storage for our Notes & Tags
 .notes.json
 .tags.json
+.users.json
 
 # JavaScript is generated from TypeScript via npx tsc index.ts
 index.js

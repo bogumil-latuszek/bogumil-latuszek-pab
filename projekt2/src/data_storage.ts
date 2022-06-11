@@ -1,6 +1,7 @@
-import Note, { Tag } from './model';
+import Note, { Tag , User} from './model';
 import Unique_id_generator from './id';
 import fs from 'fs';
+
 
 interface INotesAccess {
     hasNote(id:number): boolean;
@@ -23,6 +24,14 @@ interface ITagsAccess {
     updateTag(note:Tag): void;
     deleteTag(id:number): void;
 }
+
+interface IUsersAccess {
+    hasUser(user_name:string): boolean;
+    getUser(user_name:string): User | undefined;
+    addUser(user:User): User;
+}
+
+
 
 class InMemoryNotes implements INotesAccess {
     notes: Map<number, Note>;
@@ -72,11 +81,13 @@ class InMemoryNotes implements INotesAccess {
     }
 
     convertJsonStringToMap(jsonString: string): Map<number, Note> {
-        let jsonObject = JSON.parse(jsonString)
         let map = new Map<number, Note>()  
-        for (var key in jsonObject) {  
-           map.set(+key, jsonObject[key])  
-        }  
+        if (jsonString) {
+            let jsonObject = JSON.parse(jsonString)
+            for (var key in jsonObject) {  
+                map.set(+key, jsonObject[key])  
+            }  
+        }
         return map;
     }
 
@@ -177,11 +188,13 @@ class InMemoryTags implements ITagsAccess {
     }
 
     convertJsonStringToMap(jsonString: string): Map<number, Tag> {
-        let jsonObject = JSON.parse(jsonString)
         let map = new Map<number, Tag>()  
-        for (var key in jsonObject) {  
-           map.set(+key, jsonObject[key])  
-        }  
+        if (jsonString) {
+            let jsonObject = JSON.parse(jsonString)
+            for (var key in jsonObject) {  
+                map.set(+key, jsonObject[key])  
+            }  
+        }
         return map;
     }
 
@@ -245,4 +258,81 @@ class InMemoryTags implements ITagsAccess {
     }
 }
 
-export { INotesAccess, InMemoryNotes, ITagsAccess, InMemoryTags};
+class InMemoryUsers implements IUsersAccess {
+    users: Map<string, User>;
+    filePath: string;
+
+    constructor() {
+        this.filePath = "";
+        this.users = new Map<string, User>();
+        this.readFile(".config.json").then(configText => {
+            let configObject = JSON.parse(configText)
+            let userDataStoragePath = configObject["userDataStoragePath"]
+            this.filePath = userDataStoragePath;
+            this.readFile(userDataStoragePath).then(usersUnprocessed => {
+                this.users = this.convertJsonStringToMap(usersUnprocessed)
+            })
+        })
+    }
+
+    private async readFile(filePath:string):Promise<string>{
+        try {
+            const data = await fs.promises.readFile(filePath, 'utf-8');
+            return data;
+        } catch (err) {
+            console.log(err)
+            return "";
+        }
+    }
+
+    private async updateStorage(dataToSave: string): Promise<void> {
+        try {
+            await fs.promises.writeFile(this.filePath, dataToSave );
+        } catch (err) {
+            console.log(err)
+        }
+    }
+    
+    convertMapToJsonString(users: Map<string, User>): string {
+        let jsonObject: {[k: string]: User} = {};  
+        users.forEach((value, key) => {
+            let keyAsString = key.toString()
+            jsonObject[keyAsString] = value  
+        });
+        let jsonText = JSON.stringify(jsonObject, null, 4)
+        return jsonText;
+    }
+
+    convertJsonStringToMap(jsonString: string): Map<string, User> {
+        let map = new Map<string, User>()  
+        if (jsonString) {
+            let jsonObject = JSON.parse(jsonString)
+            for (var key in jsonObject) {  
+                map.set(key, jsonObject[key])  
+            }  
+        }
+        return map;
+    }
+
+    hasUser(name:string): boolean {
+        return this.users.has(name)
+    }
+
+    getUser(name:string): User | undefined {
+        let user: User | undefined = this.users.get(name);
+        return user;
+    }
+
+    addUser(user:User): User {
+        this.users.set(user.name, user);
+        this.save();
+        return user;
+    }
+
+    save(): void {
+        let usersStringified: string = this.convertMapToJsonString(this.users)
+        this.updateStorage(usersStringified)
+    }
+}
+
+export { INotesAccess, InMemoryNotes, ITagsAccess, InMemoryTags, IUsersAccess, InMemoryUsers};
