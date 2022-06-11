@@ -2,6 +2,7 @@ import express from 'express'
 import {Request, Response} from 'express';
 import {User} from './model';
 import { IUsersAccess, InMemoryUsers } from './data_storage'
+import * as bcrypt from 'bcrypt';
 
 let users: IUsersAccess = new InMemoryUsers();
 
@@ -21,7 +22,7 @@ router.get('/user/login', (req: Request, res: Response) => {
     if (user == undefined) {
         res.status(404).send(`given password or user name is incorrect`)
     }
-    else if (user.password == password) {
+    else if (bcrypt.compareSync(password, user.password)) {
         res.status(200).send('Logged in')
     }
     else {
@@ -42,6 +43,7 @@ router.post('/user/register', (req: Request, res: Response) => {
             res.status(400).send("this user name is already taken")
         }
         else {
+            user.password = bcrypt.hashSync(user.password, 10);
             user = users.addUser(user);
             res.status(201).send({'user_name': user.name })
         }
