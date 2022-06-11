@@ -1,5 +1,5 @@
 
-export default interface Note {
+export interface Note {
     id?: number;
     title: string;
     content: string;
@@ -15,4 +15,9 @@ export interface Tag {
 export interface User {
   name: string;
   password: string;
+}
+
+export interface UserAuth {
+  name: string;
+  is_admin: boolean;
 }

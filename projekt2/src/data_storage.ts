@@ -1,4 +1,4 @@
-import Note, { Tag , User} from './model';
+import {Note, Tag , User} from './model';
 import Unique_id_generator from './id';
 import fs from 'fs';
 import config from './config';

@@ -1,8 +1,9 @@
 import express from 'express';
 import {Request, Response} from 'express';
 import { INotesAccess, InMemoryNotes } from './data_storage'
-import Note from './model';
+import {Note, UserAuth} from './model';
 import { process_tags } from './tags';
+import { authMiddleware } from './auth';
 
 const  router = express.Router()
 export default router
@@ -20,7 +21,11 @@ router.get('/note/:id', (req: Request, res: Response) => {
   }
 })
 
-router.get('/notes/', (req: Request, res: Response) => {
+router.get('/notes/', authMiddleware, (req: Request, res: Response) => {
+  let logged_user: UserAuth = req.body.user;
+  /*if (logged_user is not owner of this note) {
+    res.status(404).send(`not autorized`)
+  }*/
   if (notes.getNotesCount() > 0) {
       let note_table: Note[] = notes.getAllNotes();
       res.status(200).send(note_table);

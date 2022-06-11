@@ -1,9 +1,9 @@
 import express from 'express'
-import {Request, Response} from 'express';
-import {User} from './model';
+import {Request, Response, NextFunction} from 'express';
+import {User, UserAuth} from './model';
 import { IUsersAccess, InMemoryUsers } from './data_storage'
 import * as bcrypt from 'bcrypt';
-import { sign, SignOptions } from 'jsonwebtoken';
+import { JsonWebTokenError, sign, SignOptions, verify, VerifyOptions } from 'jsonwebtoken';
 import config from './config';
 
 let users: IUsersAccess = new InMemoryUsers();
@@ -11,10 +11,10 @@ let users: IUsersAccess = new InMemoryUsers();
 const  router = express.Router()
 export default router
 
-export function generateToken(user: User) {
+function generateToken(user: User) {
     // information to be encoded in the JWT
-    const payload = {
-      username: user.name,
+    const payload: UserAuth = {
+      name: user.name,
       is_admin: false
     };
     const signInOptions: SignOptions = {
@@ -25,7 +25,51 @@ export function generateToken(user: User) {
     return sign(payload, config.JWT_SECRET, signInOptions);
 }
 
-router.get('/user/login', (req: Request, res: Response) => {
+function validateToken(token: string): UserAuth {
+    const verifyOptions: VerifyOptions = {
+        algorithms: ['HS256'],
+    };
+    const decoded = verify(token, config.JWT_SECRET, verifyOptions);
+    let authenticated: UserAuth = (decoded as UserAuth);
+    return authenticated;
+}
+
+export function authMiddleware(req: Request, 
+                               res: Response, next: NextFunction) {
+
+    let token: string = '';
+    let authHdr = req.headers.authorization;
+
+    // verify request has authorization
+    if (!authHdr || !authHdr.toLowerCase().startsWith('bearer')) {
+        return res.status(401).json({ message: 'Missing token' });
+    }
+    else {
+        token = authHdr.slice('bearer'.length).trim();
+    }
+    try {
+        const payload = validateToken(token);
+        req.body.user = {name: payload.name, 
+                         is_admin: payload.is_admin};
+
+    } catch (error: unknown) {
+        if (error instanceof JsonWebTokenError) {
+            if (error.name === 'TokenExpiredError') {
+                res.status(401).json({ message: 'Expired token' });
+                return;
+            }
+            else {
+                res.status(401).json({ message: 'Invalid token' });
+                return;
+            }
+        }
+        res.status(500).json({ message: 'Failed to authenticate user' });
+        return;
+    }
+    return next();
+};
+
+router.get('/user/login',  (req: Request, res: Response) => {
     if (! req.body) {
         res.status(400).send({'err': 'no user data provided'})
     }

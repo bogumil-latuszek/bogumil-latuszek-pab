@@ -1,6 +1,6 @@
 import express from 'express';
 import {Request, Response} from 'express';
-import Note, { Tag } from './model';
+import {Note, Tag} from './model';
 import tags_router from './tags';
 import { process_tags } from './tags';
 import notes_router from './notes';
