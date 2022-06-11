@@ -1,7 +1,7 @@
 import Note, { Tag , User} from './model';
 import Unique_id_generator from './id';
 import fs from 'fs';
-
+import config from './config';
 
 interface INotesAccess {
     hasNote(id:number): boolean;
@@ -39,16 +39,11 @@ class InMemoryNotes implements INotesAccess {
     gen: Unique_id_generator;
 
     constructor() {
-        this.filePath = "";
+        this.filePath = config.notesStoragePath;
         this.gen = new Unique_id_generator();
         this.notes = new Map<number, Note>();
-        this.readFile(".config.json").then(configText => {
-            let configObject = JSON.parse(configText)
-            let notesStoragePath = configObject["notesStoragePath"]
-            this.filePath = notesStoragePath;
-            this.readFile(notesStoragePath).then(notesUnprocessed => {
-                this.notes = this.convertJsonStringToMap(notesUnprocessed)
-            })
+        this.readFile(this.filePath).then(notesUnprocessed => {
+            this.notes = this.convertJsonStringToMap(notesUnprocessed)
         })
     }
 
@@ -146,16 +141,11 @@ class InMemoryTags implements ITagsAccess {
     gen: Unique_id_generator;
 
     constructor() {
-        this.filePath = "";
+        this.filePath = config.tagsStoragePath;
         this.gen = new Unique_id_generator();
         this.tags = new Map<number, Tag>();
-        this.readFile(".config.json").then(configText => {
-            let configObject = JSON.parse(configText)
-            let tagsStoragePath = configObject["tagsStoragePath"]
-            this.filePath = tagsStoragePath;
-            this.readFile(tagsStoragePath).then(tagsUnprocessed => {
-                this.tags = this.convertJsonStringToMap(tagsUnprocessed)
-            })
+        this.readFile(this.filePath).then(tagsUnprocessed => {
+            this.tags = this.convertJsonStringToMap(tagsUnprocessed)
         })
     }
 
@@ -263,15 +253,10 @@ class InMemoryUsers implements IUsersAccess {
     filePath: string;
 
     constructor() {
-        this.filePath = "";
+        this.filePath = config.userDataStoragePath;
         this.users = new Map<string, User>();
-        this.readFile(".config.json").then(configText => {
-            let configObject = JSON.parse(configText)
-            let userDataStoragePath = configObject["userDataStoragePath"]
-            this.filePath = userDataStoragePath;
-            this.readFile(userDataStoragePath).then(usersUnprocessed => {
-                this.users = this.convertJsonStringToMap(usersUnprocessed)
-            })
+        this.readFile(this.filePath).then(usersUnprocessed => {
+            this.users = this.convertJsonStringToMap(usersUnprocessed)
         })
     }
 

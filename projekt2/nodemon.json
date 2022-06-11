@@ -1,3 +1,3 @@
 {   
-    "ignore": [ ".notes.json"] 
+    "ignore": [ ".notes.json", ".tags.json", ".users.json"] 
 }
