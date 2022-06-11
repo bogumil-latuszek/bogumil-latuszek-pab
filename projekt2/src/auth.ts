@@ -3,11 +3,27 @@ import {Request, Response} from 'express';
 import {User} from './model';
 import { IUsersAccess, InMemoryUsers } from './data_storage'
 import * as bcrypt from 'bcrypt';
+import { sign, SignOptions } from 'jsonwebtoken';
+import config from './config';
 
 let users: IUsersAccess = new InMemoryUsers();
 
 const  router = express.Router()
 export default router
+
+export function generateToken(user: User) {
+    // information to be encoded in the JWT
+    const payload = {
+      username: user.name,
+      is_admin: false
+    };
+    const signInOptions: SignOptions = {
+        algorithm: 'HS256',
+        expiresIn: '5m'
+    };
+    // generate JWT
+    return sign(payload, config.JWT_SECRET, signInOptions);
+}
 
 router.get('/user/login', (req: Request, res: Response) => {
     if (! req.body) {
@@ -23,7 +39,8 @@ router.get('/user/login', (req: Request, res: Response) => {
         res.status(404).send(`given password or user name is incorrect`)
     }
     else if (bcrypt.compareSync(password, user.password)) {
-        res.status(200).send('Logged in')
+        let token = generateToken(user)
+        res.status(200).send({'token': token})
     }
     else {
         res.status(404).send(`incorrect password`)

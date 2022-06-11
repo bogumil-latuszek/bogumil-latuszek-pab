@@ -1,5 +1,6 @@
 {
     "notesStoragePath": ".notes.json",
     "tagsStoragePath": ".tags.json",
-    "userDataStoragePath": ".users.json"
+    "userDataStoragePath": ".users.json",
+    "JWT_SECRET": "sfg65jfVFT^gH"
 }
