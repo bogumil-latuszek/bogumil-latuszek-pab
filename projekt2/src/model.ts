@@ -17,7 +17,7 @@ export interface User {
   password: string;
 }
 
-export interface UserAuth {
+export interface UserInfo {
   name: string;
   is_admin: boolean;
 }

@@ -1,6 +1,6 @@
 import express from 'express'
 import {Request, Response, NextFunction} from 'express';
-import {User, UserAuth} from './model';
+import {User, UserInfo} from './model';
 import { IUsersAccess, InMemoryUsers } from './data_storage'
 import * as bcrypt from 'bcrypt';
 import { JsonWebTokenError, sign, SignOptions, verify, VerifyOptions } from 'jsonwebtoken';
@@ -13,7 +13,7 @@ export default router
 
 function generateToken(user: User) {
     // information to be encoded in the JWT
-    const payload: UserAuth = {
+    const payload: UserInfo = {
       name: user.name,
       is_admin: false
     };
@@ -25,12 +25,12 @@ function generateToken(user: User) {
     return sign(payload, config.JWT_SECRET, signInOptions);
 }
 
-function validateToken(token: string): UserAuth {
+function validateToken(token: string): UserInfo {
     const verifyOptions: VerifyOptions = {
         algorithms: ['HS256'],
     };
     const decoded = verify(token, config.JWT_SECRET, verifyOptions);
-    let authenticated: UserAuth = (decoded as UserAuth);
+    let authenticated: UserInfo = (decoded as UserInfo);
     return authenticated;
 }
 
