@@ -46,7 +46,7 @@ router.get('/notes/', authMiddleware, (req: Request, res: Response) => {
   }
 })
 
-router.post('/note/', (req: Request, res: Response) => {
+router.post('/note/',authMiddleware, (req: Request, res: Response) => {
   if (! req.body) {
       res.status(400).send({'err': 'no data provided to create a note'})
   }
@@ -57,34 +57,55 @@ router.post('/note/', (req: Request, res: Response) => {
       res.status(400).send({'err': 'note needs content'})
   }
   else {
+      let logged_user: UserInfo = req.body.user;
       let note: Note = req.body;
+      if(logged_user.name == "anonymous"){  
+        res.status(400).send({'err': 'you need to be logged in to post notes'})
+      }
       if (note.tags) {
           note.tags = process_tags(note.tags)
       }
+      note.owner_name = logged_user.name;
       note = notes.addNote(note);
       res.status(201).send({'id': note.id })
   }
 })
 
-router.put('/note/:id', (req: Request, res: Response) => {
+router.put('/note/:id', authMiddleware, (req: Request, res: Response) => {
   let note: Note = req.body;
   let id = +req.params.id;
   if (!notes.hasNote(id)) {
       res.status(404).send({'err': 'note with this id not found'})
   }
-  if (note.tags) {
+  let logged_user: UserInfo = req.body.user;
+  let noteToReplace = notes.getNote(id);
+  if(noteToReplace  && logged_user.name == noteToReplace.owner_name){
+    if (note.tags) {
       note.tags = process_tags(note.tags)
+    }
+    note.id = id;
+    note.owner_name = logged_user.name
+    notes.updateNote(note);
+    res.status(204).send({'id': id})
   }
-  note.id = id;
-  notes.updateNote(note);
-  res.status(204).send({'id': id})
+  else{
+    res.status(404).send({'err': 'you dont have permission to edit this note'})
+  }
+  
 })
 
-router.delete('/note/:id', (req: Request, res: Response) => {
+router.delete('/note/:id', authMiddleware, (req: Request, res: Response) => {
   let id = +req.params.id;
+  let logged_user: UserInfo = req.body.user
   if (!notes.hasNote(id)) {
       res.status(404).send({'err': 'note with this id not found'})
   }
-  notes.deleteNote(id);
-  res.status(204).send();
+  let note = notes.getNote(id)
+  if(logged_user.is_admin|| note && note.owner_name == logged_user.name){
+    notes.deleteNote(id);
+    res.status(204).send();
+  }
+  else{
+    res.status(403).send({'err': 'you dont have permission to change this note'})
+  }
 })
