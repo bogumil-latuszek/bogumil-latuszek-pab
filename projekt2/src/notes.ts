@@ -10,14 +10,25 @@ export default router
 
 let notes: INotesAccess = new InMemoryNotes();
 
-router.get('/note/:id', (req: Request, res: Response) => {
+router.get('/note/:id', authMiddleware, (req: Request, res: Response) => {
+  let logged_user: UserInfo = req.body.user;
   let id = +req.params.id
-  if (notes.hasNote(id)) {
-      let note = notes.getNote(id);
-      res.status(200).send(note)
+  if (!notes.hasNote(id)) {
+      res.status(404).send(`note with id=${id} doesn't exist`)
   }
   else {
-      res.status(404).send(`note with id=${id} doesn't exist`)
+    let note = notes.getNote(id);
+    if(note != undefined){
+      if(
+        note.owner_name == undefined || //publiczna notatka
+        logged_user.is_admin == true || //admin
+        note.owner_name == logged_user.name){ //właściciel notatki
+           res.status(200).send(note)
+      }
+      else{
+        res.status(403).send(`you dont have permission to access this note`)
+      }
+    }
   }
 })
 

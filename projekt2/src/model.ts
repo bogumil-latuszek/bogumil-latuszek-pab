@@ -1,5 +1,6 @@
 
 export interface Note {
+    owner_name?: string;
     id?: number;
     title: string;
     content: string;

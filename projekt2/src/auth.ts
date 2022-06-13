@@ -40,6 +40,11 @@ export function authMiddleware(req: Request,
     let token: string = '';
     let authHdr = req.headers.authorization;
 
+    if (!authHdr) {
+        req.body.user = {name: "anonymous", 
+            is_admin: false };
+        return next();
+    }
     // verify request has authorization
     if (!authHdr || !authHdr.toLowerCase().startsWith('bearer')) {
         return res.status(401).json({ message: 'Missing token' });
