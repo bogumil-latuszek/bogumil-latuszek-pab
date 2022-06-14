@@ -20,7 +20,7 @@ router.get('/note/:id', authMiddleware, (req: Request, res: Response) => {
     let note = notes.getNote(id);
     if(note != undefined){
       if(
-        note.owner_name == undefined || //publiczna notatka
+        note.private == false || //publiczna notatka
         logged_user.is_admin == true || //admin
         note.owner_name == logged_user.name){ //właściciel notatki
            res.status(200).send(note)
@@ -64,6 +64,9 @@ router.post('/note/',authMiddleware, (req: Request, res: Response) => {
       }
       if (note.tags) {
           note.tags = process_tags(note.tags)
+      }
+      if(note.private == undefined){
+        note.private = true;
       }
       note.owner_name = logged_user.name;
       note = notes.addNote(note);

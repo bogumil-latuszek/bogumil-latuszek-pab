@@ -1,5 +1,6 @@
 
 export interface Note {
+    private: boolean
     owner_name?: string;
     id?: number;
     title: string;
