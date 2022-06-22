@@ -8,6 +8,7 @@ interface INotesAccess {
     getNote(id:number): Note | undefined;
     getNotesCount(): number;
     getAllNotes(): Note[];
+    getAllPublicNotes(userName:string): Note[];
     addNote(note:Note): Note;
     updateNote(note:Note): void;
     deleteNote(id:number): void;
@@ -103,6 +104,18 @@ class InMemoryNotes implements INotesAccess {
         let note_table: Note[] = [];
         this.notes.forEach((note: Note) => note_table.push(note));
         return note_table;
+    }
+
+    getAllPublicNotes(userName:string): Note[] {
+        let note_table: Note[] = this.getAllNotes();
+        let note_table_public: Note[] = [];
+        note_table.forEach((note:Note) => {
+            if (note.private == false && 
+                note.owner_name == userName) {
+                note_table_public.push(note)
+            }
+        })
+        return note_table_public;
     }
 
     addNote(note:Note): Note {

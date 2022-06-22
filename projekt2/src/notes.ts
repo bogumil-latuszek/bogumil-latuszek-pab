@@ -4,6 +4,7 @@ import { INotesAccess, InMemoryNotes } from './data_storage'
 import {Note, UserInfo} from './model';
 import { process_tags } from './tags';
 import { authMiddleware } from './auth';
+import { execPath } from 'process';
 
 const  router = express.Router()
 export default router
@@ -40,6 +41,17 @@ router.get('/notes/', authMiddleware, (req: Request, res: Response) => {
   if (notes.getNotesCount() > 0) {
       let note_table: Note[] = notes.getAllNotes();
       res.status(200).send(note_table);
+  }
+  else {
+      res.status(404).send(`items not found`)
+  }
+})
+
+router.get('/notes/user/:userName',  (req: Request, res: Response) => {
+  let user_name: string = req.params.userName;
+  if (notes.getNotesCount() > 0) {
+      let public_notes_table: Note[] = notes.getAllPublicNotes(user_name);
+      res.status(200).send(public_notes_table);
   }
   else {
       res.status(404).send(`items not found`)
