@@ -58,6 +58,7 @@ router.post('/note/',authMiddleware, (req: Request, res: Response) => {
   }
   else {
       let logged_user: UserInfo = req.body.user;
+      delete req.body.user;
       let note: Note = req.body;
       if(logged_user.name == "anonymous"){  
         res.status(400).send({'err': 'you need to be logged in to post notes'})
