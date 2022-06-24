@@ -12,6 +12,7 @@ export interface Note {
 export interface Tag {
   id?: number;
   name: string;
+  owner_name?: string;
 }
 
 export interface User {
