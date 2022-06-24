@@ -1,8 +1,9 @@
 import express from 'express'
 import * as core from 'express-serve-static-core';
 import {Request, Response} from 'express';
-import {Tag} from './model';
+import {Tag, UserInfo} from './model';
 import { ITagsAccess, InMemoryTags } from './data_storage'
+import { authMiddleware } from './auth';
 
 let tags: ITagsAccess = new InMemoryTags();
 
@@ -30,7 +31,7 @@ router.get('/tag/:id', (req: Request, res: Response) => {
     }
 })
 
-router.post('/tag/', (req: Request, res: Response) => {
+router.post('/tag/', authMiddleware, (req: Request, res: Response) => {
     if (! req.body) {
         res.status(400).send({'err': 'no data provided to create a tag'})
     }
@@ -38,12 +39,19 @@ router.post('/tag/', (req: Request, res: Response) => {
         res.status(400).send({'err': 'tag needs name'})
     } 
     else {
+        let logged_user: UserInfo = req.body.user;
+        delete req.body.user;
         let tag: Tag = req.body;
         let tag_id = tags.findTagId(tag.name);
+        if(logged_user.name == "anonymous" /* || undefined */){  
+            res.status(400).send({'err': 'you need to be logged in to post notes'})
+          }
         if (tag_id != undefined) {
             res.status(200).send({'id' : tag_id})
         }
-        else {
+        else { 
+            //only accepts unique tags from authenticated users
+            tag.owner_name = logged_user.name;
             tag = tags.addTag(tag);
             res.status(201).send({'id': tag.id })
         }
