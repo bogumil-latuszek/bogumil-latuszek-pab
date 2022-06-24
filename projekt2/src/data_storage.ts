@@ -20,9 +20,9 @@ interface ITagsAccess {
     findTagId(name:string): number | undefined;
     getTagsCount(): number;
     getAllTags(): Tag[];
-    addTag(note:Tag): Tag;
+    addTag(tag:Tag): Tag;
     save(): void;
-    updateTag(note:Tag): void;
+    updateTag(tag:Tag): void;
     deleteTag(id:number): void;
 }
 
