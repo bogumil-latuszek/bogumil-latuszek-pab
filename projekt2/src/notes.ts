@@ -88,12 +88,13 @@ router.post('/note/',authMiddleware, (req: Request, res: Response) => {
 })
 
 router.put('/note/:id', authMiddleware, (req: Request, res: Response) => {
+  let logged_user: UserInfo = req.body.user;
+  delete req.body.user;
   let note: Note = req.body;
   let id = +req.params.id;
   if (!notes.hasNote(id)) {
       res.status(404).send({'err': 'note with this id not found'})
   }
-  let logged_user: UserInfo = req.body.user;
   let noteToReplace = notes.getNote(id);
   if(noteToReplace  && logged_user.name == noteToReplace.owner_name){
     if (note.tags) {
