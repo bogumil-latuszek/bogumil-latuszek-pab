@@ -1,38 +1,26 @@
-import {Note, Tag , User} from './model';
+import { Note, Tag, User } from './model';
 import Unique_id_generator from './id';
 import fs from 'fs';
 import config from './config';
+import { INotesAccess, ITagsAccess, IUsersAccess } from './idata_storage';
 
-interface INotesAccess {
-    hasNote(id:number): boolean;
-    getNote(id:number): Note | undefined;
-    getNotesCount(): number;
-    getAllNotes(): Note[];
-    getAllPublicNotes(userName:string): Note[];
-    addNote(note:Note): Note;
-    updateNote(note:Note): void;
-    deleteNote(id:number): void;
+async function readFile(filePath: string): Promise<string> {
+    try {
+        const data = await fs.promises.readFile(filePath, 'utf-8');
+        return data;
+    } catch (err) {
+        console.log(err);
+        return "";
+    }
 }
 
-interface ITagsAccess {
-    hasTag(id:number): boolean;
-    getTag(id:number): Tag | undefined;
-    findTagId(name:string): number | undefined;
-    getTagsCount(): number;
-    getAllTags(): Tag[];
-    addTag(tag:Tag): Tag;
-    save(): void;
-    updateTag(tag:Tag): void;
-    deleteTag(id:number): void;
+async function updateStorage(dataToSave: string, filePath: string): Promise<void> {
+    try {
+        await fs.promises.writeFile(filePath, dataToSave);
+    } catch (err) {
+        console.log(err);
+    }
 }
-
-interface IUsersAccess {
-    hasUser(user_name:string): boolean;
-    getUser(user_name:string): User | undefined;
-    addUser(user:User): User;
-}
-
-
 
 class InMemoryNotes implements INotesAccess {
     notes: Map<number, Note>;
@@ -43,55 +31,37 @@ class InMemoryNotes implements INotesAccess {
         this.filePath = config.notesStoragePath;
         this.gen = new Unique_id_generator();
         this.notes = new Map<number, Note>();
-        this.readFile(this.filePath).then(notesUnprocessed => {
-            this.notes = this.convertJsonStringToMap(notesUnprocessed)
-        })
-    }
-
-    private async readFile(filePath:string):Promise<string>{
-        try {
-            const data = await fs.promises.readFile(filePath, 'utf-8');
-            return data;
-        } catch (err) {
-            console.log(err)
-            return "";
-        }
-    }
-
-    private async updateStorage(dataToSave: string): Promise<void> {
-        try {
-            await fs.promises.writeFile(this.filePath, dataToSave );
-        } catch (err) {
-            console.log(err)
-        }
-    }
-    
-    convertMapToJsonString(notes: Map<number, Note>): string {
-        let jsonObject: {[k: string]: Note} = {};  
-        notes.forEach((value, key) => {
-            let keyAsString = key.toString()
-            jsonObject[keyAsString] = value  
+        readFile(this.filePath).then(notesUnprocessed => {
+            this.notes = this.convertJsonStringToMap(notesUnprocessed);
         });
-        let jsonText = JSON.stringify(jsonObject, null, 4)
+    }
+
+    convertMapToJsonString(notes: Map<number, Note>): string {
+        let jsonObject: { [k: string]: Note; } = {};
+        notes.forEach((value, key) => {
+            let keyAsString = key.toString();
+            jsonObject[keyAsString] = value;
+        });
+        let jsonText = JSON.stringify(jsonObject, null, 4);
         return jsonText;
     }
 
     convertJsonStringToMap(jsonString: string): Map<number, Note> {
-        let map = new Map<number, Note>()  
+        let map = new Map<number, Note>();
         if (jsonString) {
-            let jsonObject = JSON.parse(jsonString)
-            for (var key in jsonObject) {  
-                map.set(+key, jsonObject[key])  
-            }  
+            let jsonObject = JSON.parse(jsonString);
+            for (var key in jsonObject) {
+                map.set(+key, jsonObject[key]);
+            }
         }
         return map;
     }
 
-    hasNote(id:number): boolean {
-        return this.notes.has(id)
+    hasNote(id: number): boolean {
+        return this.notes.has(id);
     }
 
-    getNote(id:number): Note | undefined {
+    getNote(id: number): Note | undefined {
         let note: Note | undefined = this.notes.get(id);
         return note;
     }
@@ -106,19 +76,19 @@ class InMemoryNotes implements INotesAccess {
         return note_table;
     }
 
-    getAllPublicNotes(userName:string): Note[] {
+    getAllPublicNotes(userName: string): Note[] {
         let note_table: Note[] = this.getAllNotes();
         let note_table_public: Note[] = [];
-        note_table.forEach((note:Note) => {
-            if (note.private == false && 
+        note_table.forEach((note: Note) => {
+            if (note.private == false &&
                 note.owner_name == userName) {
-                note_table_public.push(note)
+                note_table_public.push(note);
             }
-        })
+        });
         return note_table_public;
     }
 
-    addNote(note:Note): Note {
+    addNote(note: Note): Note {
         // update incomming note with creationDate and id fields
         let creation_date = new Date().toISOString();
         let id = this.gen.generate_unique_id(this.notes);
@@ -131,23 +101,22 @@ class InMemoryNotes implements INotesAccess {
     }
 
     save(): void {
-        let notesStringified: string = this.convertMapToJsonString(this.notes)
-        this.updateStorage(notesStringified)
+        let notesStringified: string = this.convertMapToJsonString(this.notes);
+        updateStorage(notesStringified, this.filePath);
     }
 
-    updateNote(note:Note): void {
+    updateNote(note: Note): void {
         if (note.id) {
             this.notes.set(note.id, note);
             this.save();
         }
     }
 
-    deleteNote(id:number): void {
+    deleteNote(id: number): void {
         this.notes.delete(id);
         this.save();
     }
 }
-
 class InMemoryTags implements ITagsAccess {
     tags: Map<number, Tag>;
     filePath: string;
@@ -157,68 +126,50 @@ class InMemoryTags implements ITagsAccess {
         this.filePath = config.tagsStoragePath;
         this.gen = new Unique_id_generator();
         this.tags = new Map<number, Tag>();
-        this.readFile(this.filePath).then(tagsUnprocessed => {
-            this.tags = this.convertJsonStringToMap(tagsUnprocessed)
-        })
-    }
-
-    private async readFile(filePath:string):Promise<string>{
-        try {
-            const data = await fs.promises.readFile(filePath, 'utf-8');
-            return data;
-        } catch (err) {
-            console.log(err)
-            return "";
-        }
-    }
-
-    private async updateStorage(dataToSave: string): Promise<void> {
-        try {
-            await fs.promises.writeFile(this.filePath, dataToSave );
-        } catch (err) {
-            console.log(err)
-        }
-    }
-    
-    convertMapToJsonString(tags: Map<number, Tag>): string {
-        let jsonObject: {[k: string]: Tag} = {};  
-        tags.forEach((value, key) => {
-            let keyAsString = key.toString()
-            jsonObject[keyAsString] = value  
+        readFile(this.filePath).then(tagsUnprocessed => {
+            this.tags = this.convertJsonStringToMap(tagsUnprocessed);
         });
-        let jsonText = JSON.stringify(jsonObject, null, 4)
+    }
+
+    convertMapToJsonString(tags: Map<number, Tag>): string {
+        let jsonObject: { [k: string]: Tag; } = {};
+        tags.forEach((value, key) => {
+            let keyAsString = key.toString();
+            jsonObject[keyAsString] = value;
+        });
+        let jsonText = JSON.stringify(jsonObject, null, 4);
         return jsonText;
     }
 
     convertJsonStringToMap(jsonString: string): Map<number, Tag> {
-        let map = new Map<number, Tag>()  
+        let map = new Map<number, Tag>();
         if (jsonString) {
-            let jsonObject = JSON.parse(jsonString)
-            for (var key in jsonObject) {  
-                map.set(+key, jsonObject[key])  
-            }  
+            let jsonObject = JSON.parse(jsonString);
+            for (var key in jsonObject) {
+                map.set(+key, jsonObject[key]);
+            }
         }
         return map;
     }
 
-    hasTag(id:number): boolean {
-        return this.tags.has(id)
+    hasTag(id: number): boolean {
+        return this.tags.has(id);
     }
 
-    getTag(id:number): Tag | undefined {
+    getTag(id: number): Tag | undefined {
         let tag: Tag | undefined = this.tags.get(id);
         return tag;
     }
 
-    findTagId(name:string): number | undefined {
+    findTagId(name: string): number | undefined {
         // tag is always lowercase
-        let searched_name: string = name.toLowerCase()
+        let searched_name: string = name.toLowerCase();
         let tag_id: number | undefined = undefined;
-        this.tags.forEach((tag: Tag) => { 
+        this.tags.forEach((tag: Tag) => {
             if (tag.name == searched_name) {
                 tag_id = tag.id;
             }
-        })
+        });
         return tag_id;
     }
 
@@ -232,7 +183,7 @@ class InMemoryTags implements ITagsAccess {
         return tag_table;
     }
 
-    addTag(tag:Tag): Tag {
+    addTag(tag: Tag): Tag {
         // tag is always lowercase
         tag.name = tag.name.toLowerCase();
         // update incomming tag with id
@@ -244,23 +195,22 @@ class InMemoryTags implements ITagsAccess {
     }
 
     save(): void {
-        let tagsStringified: string = this.convertMapToJsonString(this.tags)
-        this.updateStorage(tagsStringified)
+        let tagsStringified: string = this.convertMapToJsonString(this.tags);
+        updateStorage(tagsStringified, this.filePath);
     }
 
-    updateTag(tag:Tag): void {
+    updateTag(tag: Tag): void {
         if (tag.id) {
             this.tags.set(tag.id, tag);
             this.save();
         }
     }
 
-    deleteTag(id:number): void {
+    deleteTag(id: number): void {
         this.tags.delete(id);
         this.save();
     }
 }
-
 class InMemoryUsers implements IUsersAccess {
     users: Map<string, User>;
     filePath: string;
@@ -268,69 +218,50 @@ class InMemoryUsers implements IUsersAccess {
     constructor() {
         this.filePath = config.userDataStoragePath;
         this.users = new Map<string, User>();
-        this.readFile(this.filePath).then(usersUnprocessed => {
-            this.users = this.convertJsonStringToMap(usersUnprocessed)
-        })
-    }
-
-    private async readFile(filePath:string):Promise<string>{
-        try {
-            const data = await fs.promises.readFile(filePath, 'utf-8');
-            return data;
-        } catch (err) {
-            console.log(err)
-            return "";
-        }
-    }
-
-    private async updateStorage(dataToSave: string): Promise<void> {
-        try {
-            await fs.promises.writeFile(this.filePath, dataToSave );
-        } catch (err) {
-            console.log(err)
-        }
-    }
-    
-    convertMapToJsonString(users: Map<string, User>): string {
-        let jsonObject: {[k: string]: User} = {};  
-        users.forEach((value, key) => {
-            let keyAsString = key.toString()
-            jsonObject[keyAsString] = value  
+        readFile(this.filePath).then(usersUnprocessed => {
+            this.users = this.convertJsonStringToMap(usersUnprocessed);
         });
-        let jsonText = JSON.stringify(jsonObject, null, 4)
+    }
+
+    convertMapToJsonString(users: Map<string, User>): string {
+        let jsonObject: { [k: string]: User; } = {};
+        users.forEach((value, key) => {
+            let keyAsString = key.toString();
+            jsonObject[keyAsString] = value;
+        });
+        let jsonText = JSON.stringify(jsonObject, null, 4);
         return jsonText;
     }
 
     convertJsonStringToMap(jsonString: string): Map<string, User> {
-        let map = new Map<string, User>()  
+        let map = new Map<string, User>();
         if (jsonString) {
-            let jsonObject = JSON.parse(jsonString)
-            for (var key in jsonObject) {  
-                map.set(key, jsonObject[key])  
-            }  
+            let jsonObject = JSON.parse(jsonString);
+            for (var key in jsonObject) {
+                map.set(key, jsonObject[key]);
+            }
         }
         return map;
     }
 
-    hasUser(name:string): boolean {
-        return this.users.has(name)
+    hasUser(name: string): boolean {
+        return this.users.has(name);
     }
 
-    getUser(name:string): User | undefined {
+    getUser(name: string): User | undefined {
         let user: User | undefined = this.users.get(name);
         return user;
     }
 
-    addUser(user:User): User {
+    addUser(user: User): User {
         this.users.set(user.name, user);
         this.save();
         return user;
     }
 
     save(): void {
-        let usersStringified: string = this.convertMapToJsonString(this.users)
-        this.updateStorage(usersStringified)
+        let usersStringified: string = this.convertMapToJsonString(this.users);
+        updateStorage(usersStringified, this.filePath);
     }
 }
-
-export { INotesAccess, InMemoryNotes, ITagsAccess, InMemoryTags, IUsersAccess, InMemoryUsers};
+export {  InMemoryNotes, InMemoryTags, InMemoryUsers };
