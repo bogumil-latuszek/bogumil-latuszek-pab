@@ -1,7 +1,7 @@
 import express from 'express';
 import {Request, Response} from 'express';
 import { INotesAccess} from './idata_storage'
-import { InMemoryNotes } from './data_storage'
+import {Select_Notes_Access} from './data_storage_selector'
 import {Note, UserInfo} from './model';
 import { process_tags } from './tags';
 import { authMiddleware } from './auth';
@@ -10,7 +10,7 @@ import { execPath } from 'process';
 const  router = express.Router()
 export default router
 
-let notes: INotesAccess = new InMemoryNotes();
+let notes: INotesAccess = Select_Notes_Access();
 
 router.get('/note/:id', authMiddleware, (req: Request, res: Response) => {
   let logged_user: UserInfo = req.body.user;

@@ -2,12 +2,12 @@ import express from 'express'
 import {Request, Response, NextFunction} from 'express';
 import {User, UserInfo} from './model';
 import { IUsersAccess } from './idata_storage'
-import { InMemoryUsers } from "./data_storage";
+import { Select_Users_Access } from "./data_storage_selector";
 import * as bcrypt from 'bcrypt';
 import { JsonWebTokenError, sign, SignOptions, verify, VerifyOptions } from 'jsonwebtoken';
 import config from './config';
 
-let users: IUsersAccess = new InMemoryUsers();
+let users: IUsersAccess = Select_Users_Access();
 
 const  router = express.Router()
 export default router

@@ -22,7 +22,7 @@ async function updateStorage(dataToSave: string, filePath: string): Promise<void
     }
 }
 
-class InMemoryNotes implements INotesAccess {
+class FilesNotes implements INotesAccess {
     notes: Map<number, Note>;
     filePath: string;
     gen: Unique_id_generator;
@@ -117,7 +117,7 @@ class InMemoryNotes implements INotesAccess {
         this.save();
     }
 }
-class InMemoryTags implements ITagsAccess {
+class FilesTags implements ITagsAccess {
     tags: Map<number, Tag>;
     filePath: string;
     gen: Unique_id_generator;
@@ -211,7 +211,7 @@ class InMemoryTags implements ITagsAccess {
         this.save();
     }
 }
-class InMemoryUsers implements IUsersAccess {
+class FilesUsers implements IUsersAccess {
     users: Map<string, User>;
     filePath: string;
 
@@ -264,4 +264,4 @@ class InMemoryUsers implements IUsersAccess {
         updateStorage(usersStringified, this.filePath);
     }
 }
-export {  InMemoryNotes, InMemoryTags, InMemoryUsers };
+export {  FilesNotes , FilesTags, FilesUsers };

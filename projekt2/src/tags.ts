@@ -3,10 +3,10 @@ import * as core from 'express-serve-static-core';
 import {Request, Response} from 'express';
 import {Tag, UserInfo} from './model';
 import { ITagsAccess } from './idata_storage'
-import { InMemoryTags } from './data_storage'
+import { Select_Tags_Access } from './data_storage_selector'
 import { authMiddleware } from './auth';
 
-let tags: ITagsAccess = new InMemoryTags();
+let tags: ITagsAccess = Select_Tags_Access();
 
 const  router = express.Router()
 export default router
