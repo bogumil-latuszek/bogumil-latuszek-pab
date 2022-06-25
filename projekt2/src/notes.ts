@@ -1,6 +1,7 @@
 import express from 'express';
 import {Request, Response} from 'express';
-import { INotesAccess, InMemoryNotes } from './data_storage'
+import { INotesAccess} from './idata_storage'
+import { InMemoryNotes } from './data_storage'
 import {Note, UserInfo} from './model';
 import { process_tags } from './tags';
 import { authMiddleware } from './auth';

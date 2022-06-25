@@ -1,7 +1,8 @@
 import express from 'express'
 import {Request, Response, NextFunction} from 'express';
 import {User, UserInfo} from './model';
-import { IUsersAccess, InMemoryUsers } from './data_storage'
+import { IUsersAccess } from './idata_storage'
+import { InMemoryUsers } from "./data_storage";
 import * as bcrypt from 'bcrypt';
 import { JsonWebTokenError, sign, SignOptions, verify, VerifyOptions } from 'jsonwebtoken';
 import config from './config';

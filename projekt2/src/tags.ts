@@ -2,7 +2,8 @@ import express from 'express'
 import * as core from 'express-serve-static-core';
 import {Request, Response} from 'express';
 import {Tag, UserInfo} from './model';
-import { ITagsAccess, InMemoryTags } from './data_storage'
+import { ITagsAccess } from './idata_storage'
+import { InMemoryTags } from './data_storage'
 import { authMiddleware } from './auth';
 
 let tags: ITagsAccess = new InMemoryTags();
