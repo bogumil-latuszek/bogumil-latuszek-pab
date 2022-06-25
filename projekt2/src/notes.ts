@@ -34,6 +34,8 @@ router.get('/note/:id', authMiddleware, (req: Request, res: Response) => {
 })
 
 router.get('/notes/', authMiddleware, (req: Request, res: Response) => {
+  // TODO: return all public notes + private of logged user
+  // TODO: return all priv+public if logged as admin
   let logged_user: UserInfo = req.body.user;
   /*if (logged_user is not owner of this note) {
     res.status(404).send(`not autorized`)
