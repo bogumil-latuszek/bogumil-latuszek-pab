@@ -29,6 +29,9 @@ class FilesNotes implements INotesAccess {
 
     constructor() {
         this.filePath = config.notesStoragePath;
+        if (! fs.existsSync(this.filePath)) {
+            fs.writeFileSync(this.filePath, "{}");
+        }
         this.gen = new Unique_id_generator();
         this.notes = new Map<number, Note>();
         readFile(this.filePath).then(notesUnprocessed => {
@@ -124,6 +127,9 @@ class FilesTags implements ITagsAccess {
 
     constructor() {
         this.filePath = config.tagsStoragePath;
+        if (! fs.existsSync(this.filePath)) {
+            fs.writeFileSync(this.filePath, "{}");
+        }
         this.gen = new Unique_id_generator();
         this.tags = new Map<number, Tag>();
         readFile(this.filePath).then(tagsUnprocessed => {
@@ -217,6 +223,9 @@ class FilesUsers implements IUsersAccess {
 
     constructor() {
         this.filePath = config.userDataStoragePath;
+        if (! fs.existsSync(this.filePath)) {
+            fs.writeFileSync(this.filePath, "{}");
+        }
         this.users = new Map<string, User>();
         readFile(this.filePath).then(usersUnprocessed => {
             this.users = this.convertJsonStringToMap(usersUnprocessed);

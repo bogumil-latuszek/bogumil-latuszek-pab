@@ -408,3 +408,6 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 .vscode/settings.json
+projekt2/.db.notes.json
+projekt2/.db.tags.json
+projekt2/.db.users.json
