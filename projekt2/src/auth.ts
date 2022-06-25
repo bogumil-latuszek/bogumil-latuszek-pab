@@ -15,7 +15,7 @@ function generateToken(user: User) {
     // information to be encoded in the JWT
     const payload: UserInfo = {
       name: user.name,
-      is_admin: false
+      is_admin: user.is_admin
     };
     const signInOptions: SignOptions = {
         algorithm: 'HS256',
@@ -105,6 +105,7 @@ router.post('/user/register', (req: Request, res: Response) => {
     } 
     else {
         let user: User = req.body;
+        user.is_admin = false;
         if (users.hasUser(user.name)) {
             res.status(400).send("this user name is already taken")
         }

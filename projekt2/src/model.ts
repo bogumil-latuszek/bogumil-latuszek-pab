@@ -18,6 +18,7 @@ export interface Tag {
 export interface User {
   name: string;
   password: string;
+  is_admin: boolean;
 }
 
 export interface UserInfo {
