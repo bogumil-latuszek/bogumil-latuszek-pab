@@ -1,14 +1,14 @@
 import {Note, Tag , User} from './model';
 
 interface INotesAccess {
-    hasNote(id:number): boolean;
-    getNote(id:number): Note | undefined;
-    getNotesCount(): number;
-    getAllNotes(): Note[];
-    getAllPublicNotes(userName:string): Note[];
-    addNote(note:Note): Note;
-    updateNote(note:Note): void;
-    deleteNote(id:number): void;
+    hasNote(id:number): Promise<boolean>;
+    getNote(id:number): Promise<Note | undefined>;
+    getNotesCount(): Promise<number>;
+    getAllNotes(): Promise<Note[]>;
+    getAllPublicNotes(userName:string): Promise<Note[]>;
+    addNote(note:Note): Promise<Note>;
+    updateNote(note:Note): Promise<void>;
+    deleteNote(id:number): Promise<void>;
 }
 
 interface ITagsAccess {

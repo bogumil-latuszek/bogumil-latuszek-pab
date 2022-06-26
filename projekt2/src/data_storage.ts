@@ -60,27 +60,28 @@ class FilesNotes implements INotesAccess {
         return map;
     }
 
-    hasNote(id: number): boolean {
-        return this.notes.has(id);
+    async hasNote(id: number): Promise<boolean> {
+        return Promise.resolve(this.notes.has(id));
+        
     }
 
-    getNote(id: number): Note | undefined {
+    async getNote(id: number): Promise<Note | undefined> {
         let note: Note | undefined = this.notes.get(id);
-        return note;
+        return Promise.resolve(note);
     }
 
-    getNotesCount(): number {
-        return this.notes.size;
+    async getNotesCount(): Promise<number> {
+        return Promise.resolve(this.notes.size);
     }
 
-    getAllNotes(): Note[] {
+    async getAllNotes(): Promise<Note[]> {
         let note_table: Note[] = [];
         this.notes.forEach((note: Note) => note_table.push(note));
-        return note_table;
+        return Promise.resolve(note_table);
     }
 
-    getAllPublicNotes(userName: string): Note[] {
-        let note_table: Note[] = this.getAllNotes();
+    async getAllPublicNotes(userName: string): Promise<Note[]> {
+        let note_table: Note[] = await this.getAllNotes();
         let note_table_public: Note[] = [];
         note_table.forEach((note: Note) => {
             if (note.private == false &&
@@ -88,10 +89,10 @@ class FilesNotes implements INotesAccess {
                 note_table_public.push(note);
             }
         });
-        return note_table_public;
+        return Promise.resolve(note_table_public);
     }
 
-    addNote(note: Note): Note {
+    async addNote(note: Note): Promise<Note> {
         // update incomming note with creationDate and id fields
         let creation_date = new Date().toISOString();
         let id = this.gen.generate_unique_id(this.notes);
@@ -100,7 +101,7 @@ class FilesNotes implements INotesAccess {
         //processing note.tags should be done before calling this method
         this.notes.set(id, note);
         this.save();
-        return note;
+        return Promise.resolve(note);
     }
 
     save(): void {
@@ -108,16 +109,18 @@ class FilesNotes implements INotesAccess {
         updateStorage(notesStringified, this.filePath);
     }
 
-    updateNote(note: Note): void {
+    async updateNote(note: Note): Promise<void> {
         if (note.id) {
             this.notes.set(note.id, note);
             this.save();
         }
+        return Promise.resolve();
     }
 
-    deleteNote(id: number): void {
+    async deleteNote(id: number): Promise<void> {
         this.notes.delete(id);
         this.save();
+        return Promise.resolve()
     }
 }
 class FilesTags implements ITagsAccess {

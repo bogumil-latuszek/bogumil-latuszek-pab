@@ -12,14 +12,14 @@ export default router
 
 let notes: INotesAccess = Select_Notes_Access();
 
-router.get('/note/:id', authMiddleware, (req: Request, res: Response) => {
+router.get('/note/:id', authMiddleware, async (req: Request, res: Response) => {
   let logged_user: UserInfo = req.body.user;
   let id = +req.params.id
   if (!notes.hasNote(id)) {
       res.status(404).send(`note with id=${id} doesn't exist`)
   }
   else {
-    let note = notes.getNote(id);
+    let note = await notes.getNote(id);
     if(note != undefined){
       if(
         note.private == false || //publiczna notatka
@@ -34,15 +34,15 @@ router.get('/note/:id', authMiddleware, (req: Request, res: Response) => {
   }
 })
 
-router.get('/notes/', authMiddleware, (req: Request, res: Response) => {
+router.get('/notes/', authMiddleware, async (req: Request, res: Response) => {
   // TODO: return all public notes + private of logged user
   // TODO: return all priv+public if logged as admin
   let logged_user: UserInfo = req.body.user;
   /*if (logged_user is not owner of this note) {
     res.status(404).send(`not autorized`)
   }*/
-  if (notes.getNotesCount() > 0) {
-      let note_table: Note[] = notes.getAllNotes();
+  if ( await notes.getNotesCount() > 0) {
+      let note_table: Note[] = await notes.getAllNotes();
       res.status(200).send(note_table);
   }
   else {
@@ -50,10 +50,10 @@ router.get('/notes/', authMiddleware, (req: Request, res: Response) => {
   }
 })
 
-router.get('/notes/user/:userName',  (req: Request, res: Response) => {
+router.get('/notes/user/:userName',  async (req: Request, res: Response) => {
   let user_name: string = req.params.userName;
-  if (notes.getNotesCount() > 0) {
-      let public_notes_table: Note[] = notes.getAllPublicNotes(user_name);
+  if (await notes.getNotesCount() > 0) {
+      let public_notes_table: Note[] = await notes.getAllPublicNotes(user_name);
       res.status(200).send(public_notes_table);
   }
   else {
@@ -85,7 +85,7 @@ router.post('/note/',authMiddleware, async(req: Request, res: Response) => {
         note.private = true;
       }
       note.owner_name = logged_user.name;
-      note = notes.addNote(note);
+      note = await notes.addNote(note);
       res.status(201).send({'id': note.id })
   }
 })
@@ -98,7 +98,7 @@ router.put('/note/:id', authMiddleware, async (req: Request, res: Response) => {
   if (!notes.hasNote(id)) {
       res.status(404).send({'err': 'note with this id not found'})
   }
-  let noteToReplace = notes.getNote(id);
+  let noteToReplace = await  notes.getNote(id);
   if(noteToReplace  && logged_user.name == noteToReplace.owner_name){
     if (note.tags) {
       note.tags = await process_tags(note.tags)
@@ -114,13 +114,13 @@ router.put('/note/:id', authMiddleware, async (req: Request, res: Response) => {
   
 })
 
-router.delete('/note/:id', authMiddleware, (req: Request, res: Response) => {
+router.delete('/note/:id', authMiddleware, async (req: Request, res: Response) => {
   let id = +req.params.id;
   let logged_user: UserInfo = req.body.user
   if (!notes.hasNote(id)) {
       res.status(404).send({'err': 'note with this id not found'})
   }
-  let note = notes.getNote(id)
+  let note = await notes.getNote(id)
   if(logged_user.is_admin|| note && note.owner_name == logged_user.name){
     notes.deleteNote(id);
     res.status(204).send();
