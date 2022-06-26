@@ -97,7 +97,7 @@ router.get('/user/login',  (req: Request, res: Response) => {
     }
 })
 
-router.post('/user/register', (req: Request, res: Response) => {
+router.post('/user/register', async (req: Request, res: Response) => {
     if (! req.body) {
         res.status(400).send({'err': 'no user data provided'})
     }
@@ -107,7 +107,7 @@ router.post('/user/register', (req: Request, res: Response) => {
     else {
         let user: User = req.body;
         user.is_admin = false;
-        if (users.hasUser(user.name)) {
+        if (await users.hasUser(user.name)) {
             res.status(400).send("this user name is already taken")
         }
         else {

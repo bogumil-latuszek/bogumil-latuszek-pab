@@ -3,11 +3,26 @@ import Unique_id_generator from './id';
 import fs from 'fs';
 import config from './config';
 import { INotesAccess, ITagsAccess, IUsersAccess } from './idata_storage';
-import mongoose from 'mongoose';
+//import { Schema, model, connect } from 'mongoose';
 
 //export default function start(){
-//    mongoose.connect('mongodb://localhost:27017/myapp', ()=>console.log("działa"));
+//    mongoose.connect(config.MONGO_URI, ()=>console.log("działa"));
 //}
+
+/*
+//schema
+const userSchema = new Schema<User>({
+    // name: String,
+    // password: String,
+    // is_admin: Boolean,
+    name: { type: String, required: true },
+    password: { type: String, required: true },
+    is_admin: { type: Boolean, required: true },
+  });
+  
+// 3. Create a Model.
+const UserInDb = model<User>('UserInDb', userSchema);
+*/
 
 async function readFile(filePath: string): Promise<string> {
     try {
@@ -258,8 +273,9 @@ class DbUsers implements IUsersAccess {
         return map;
     }
 
-    hasUser(name: string): boolean {
-        return this.users.has(name);
+    async hasUser(name: string): Promise<boolean> {
+        let has_user: boolean = this.users.has(name);
+        return Promise.resolve(has_user)
     }
 
     getUser(name: string): User | undefined {
@@ -272,6 +288,24 @@ class DbUsers implements IUsersAccess {
         this.save();
         return user;
     }
+
+    /*
+    async addUser_async(user: User): Promise<User> {
+        let name: String = user.name;
+        let password: String = user.password;
+        let is_admin: Boolean = user.is_admin;
+        const userInDb = await  UserInDb.create({
+            name,
+            password,
+            is_admin,
+        });
+        return user
+    }
+
+    addUser(user: User): User{
+        this.addUser_async(user).then((user:User)=>{ new User{user.name, user.password, user.is_admin}});
+    }
+    */
 
     save(): void {
         let usersStringified: string = this.convertMapToJsonString(this.users);

@@ -24,7 +24,7 @@ interface ITagsAccess {
 }
 
 interface IUsersAccess {
-    hasUser(user_name:string): boolean;
+    hasUser(user_name:string): Promise<boolean>;
     getUser(user_name:string): User | undefined;
     addUser(user:User): User;
 }
