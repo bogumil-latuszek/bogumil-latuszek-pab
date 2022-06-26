@@ -61,7 +61,7 @@ router.get('/notes/user/:userName',  (req: Request, res: Response) => {
   }
 })
 
-router.post('/note/',authMiddleware, (req: Request, res: Response) => {
+router.post('/note/',authMiddleware, async(req: Request, res: Response) => {
   if (! req.body) {
       res.status(400).send({'err': 'no data provided to create a note'})
   }
@@ -79,7 +79,7 @@ router.post('/note/',authMiddleware, (req: Request, res: Response) => {
         res.status(400).send({'err': 'you need to be logged in to post notes'})
       }
       if (note.tags) {
-          note.tags = process_tags(note.tags)
+          note.tags = await process_tags(note.tags)
       }
       if(note.private == undefined){
         note.private = true;
@@ -90,7 +90,7 @@ router.post('/note/',authMiddleware, (req: Request, res: Response) => {
   }
 })
 
-router.put('/note/:id', authMiddleware, (req: Request, res: Response) => {
+router.put('/note/:id', authMiddleware, async (req: Request, res: Response) => {
   let logged_user: UserInfo = req.body.user;
   delete req.body.user;
   let note: Note = req.body;
@@ -101,7 +101,7 @@ router.put('/note/:id', authMiddleware, (req: Request, res: Response) => {
   let noteToReplace = notes.getNote(id);
   if(noteToReplace  && logged_user.name == noteToReplace.owner_name){
     if (note.tags) {
-      note.tags = process_tags(note.tags)
+      note.tags = await process_tags(note.tags)
     }
     note.id = id;
     note.owner_name = logged_user.name

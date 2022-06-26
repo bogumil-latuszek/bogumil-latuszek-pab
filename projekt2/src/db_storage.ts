@@ -178,16 +178,16 @@ class DbTags implements ITagsAccess {
         return map;
     }
 
-    hasTag(id: number): boolean {
-        return this.tags.has(id);
+    hasTag(id: number): Promise<boolean> {
+        return Promise.resolve(this.tags.has(id));
     }
 
-    getTag(id: number): Tag | undefined {
+    getTag(id: number): Promise<Tag | undefined> {
         let tag: Tag | undefined = this.tags.get(id);
-        return tag;
+        return Promise.resolve(tag);
     }
 
-    findTagId(name: string): number | undefined {
+    findTagId(name: string): Promise<number | undefined> {
         // tag is always lowercase
         let searched_name: string = name.toLowerCase();
         let tag_id: number | undefined = undefined;
@@ -196,20 +196,20 @@ class DbTags implements ITagsAccess {
                 tag_id = tag.id;
             }
         });
-        return tag_id;
+        return Promise.resolve(tag_id);
     }
 
-    getTagsCount(): number {
-        return this.tags.size;
+    getTagsCount():  Promise<number> {
+        return Promise.resolve(this.tags.size);
     }
 
-    getAllTags(): Tag[] {
+    getAllTags(): Promise<Tag[]> {
         let tag_table: Tag[] = [];
         this.tags.forEach((tag: Tag) => tag_table.push(tag));
-        return tag_table;
+        return Promise.resolve(tag_table);
     }
 
-    addTag(tag: Tag): Tag {
+    addTag(tag: Tag): Promise<Tag> {
         // tag is always lowercase
         tag.name = tag.name.toLowerCase();
         // update incomming tag with id
@@ -217,24 +217,27 @@ class DbTags implements ITagsAccess {
         tag.id = id;
         this.tags.set(id, tag);
         this.save();
-        return tag;
+        return Promise.resolve(tag);
     }
 
-    save(): void {
+    save(): Promise<void> {
         let tagsStringified: string = this.convertMapToJsonString(this.tags);
         updateStorage(tagsStringified, this.filePath);
+        return Promise.resolve();
     }
 
-    updateTag(tag: Tag): void {
+    updateTag(tag: Tag): Promise<void> {
         if (tag.id) {
             this.tags.set(tag.id, tag);
             this.save();
         }
+        return Promise.resolve();
     }
 
-    deleteTag(id: number): void {
+    deleteTag(id: number): Promise<void> {
         this.tags.delete(id);
         this.save();
+        return Promise.resolve();
     }
 }
 class DbUsers implements IUsersAccess {

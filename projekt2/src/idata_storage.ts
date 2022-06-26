@@ -12,15 +12,15 @@ interface INotesAccess {
 }
 
 interface ITagsAccess {
-    hasTag(id:number): boolean;
-    getTag(id:number): Tag | undefined;
-    findTagId(name:string): number | undefined;
-    getTagsCount(): number;
-    getAllTags(): Tag[];
-    addTag(tag:Tag): Tag;
-    save(): void;
-    updateTag(tag:Tag): void;
-    deleteTag(id:number): void;
+    hasTag(id:number): Promise<boolean>;
+    getTag(id:number): Promise<Tag | undefined>;
+    findTagId(name:string): Promise<number | undefined>;
+    getTagsCount(): Promise<number>;
+    getAllTags(): Promise<Tag[]>;
+    addTag(tag:Tag): Promise<Tag>;
+    save(): Promise<void>;
+    updateTag(tag:Tag): Promise<void>;
+    deleteTag(id:number): Promise<void>;
 }
 
 interface IUsersAccess {
