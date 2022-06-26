@@ -258,15 +258,15 @@ class FilesUsers implements IUsersAccess {
         return Promise.resolve(has_user)
     }
 
-    getUser(name: string): User | undefined {
+    async getUser(name: string): Promise<User | undefined> {
         let user: User | undefined = this.users.get(name);
-        return user;
+        return Promise.resolve(user);
     }
 
-    addUser(user: User): User {
+    async addUser(user: User): Promise<User | undefined> {
         this.users.set(user.name, user);
         this.save();
-        return user;
+        return Promise.resolve(user);
     }
 
     save(): void {

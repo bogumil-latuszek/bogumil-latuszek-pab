@@ -75,7 +75,7 @@ export function authMiddleware(req: Request,
     return next();
 };
 
-router.get('/user/login',  (req: Request, res: Response) => {
+router.get('/user/login',  async (req: Request, res: Response) => {
     if (! req.body) {
         res.status(400).send({'err': 'no user data provided'})
     }
@@ -84,7 +84,7 @@ router.get('/user/login',  (req: Request, res: Response) => {
     } 
     let name = req.body.name
     let password = req.body.password
-    let user = users.getUser(name);
+    let user = await users.getUser(name);
     if (user == undefined) {
         res.status(404).send(`given password or user name is incorrect`)
     }
@@ -112,8 +112,10 @@ router.post('/user/register', async (req: Request, res: Response) => {
         }
         else {
             user.password = bcrypt.hashSync(user.password, 10);
-            user = users.addUser(user);
-            res.status(201).send({'user_name': user.name })
+            let user_added = await users.addUser(user);
+            if(user_added){
+                res.status(201).send({'user_name': user.name })
+            }
         }
     }
 })
