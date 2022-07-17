@@ -3,5 +3,6 @@
     "tagsStoragePath": ".tags.json",
     "userDataStoragePath": ".users.json",
     "JWT_SECRET": "sfg65jfVFT^gH",
-    "data_storage_variant" : "db"
+    "data_storage_variant" : "db",
+    "MONGO_URI": "mongodb://localhost:27017/myapp"
 }

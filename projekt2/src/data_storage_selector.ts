@@ -1,9 +1,19 @@
 import { FilesNotes, FilesTags, FilesUsers } from './data_storage'
 import { INotesAccess, ITagsAccess, IUsersAccess } from './idata_storage'
-import {  DbNotes, DbTags, DbUsers } from './db_storage'
+import {  DbNotes, DbTags, DbUsers, setupDBConnection } from './db_storage'
 import config from './config';
+
  
 let dataStorVar = config.data_storage_variant;
+
+
+function initDataAccess() {
+    if (dataStorVar == "db") {
+        setupDBConnection()
+    }
+}
+
+initDataAccess();
 
 export function Select_Notes_Access(): INotesAccess{
     if(dataStorVar == "db"){

@@ -3,7 +3,22 @@ import Unique_id_generator from './id';
 import fs from 'fs';
 import config from './config';
 import { INotesAccess, ITagsAccess, IUsersAccess } from './idata_storage';
-//import { Schema, model, connect } from 'mongoose';
+import { Schema, model, connect, Model } from 'mongoose';
+
+let dbConnectingStarted: Boolean = false;
+
+export function setupDBConnection() {
+    if (!dbConnectingStarted) {
+        dbConnectingStarted = true;
+        connect(config.MONGO_URI)
+        .then(() => {
+            console.log("MongoDB started");
+        })
+        .catch(e => {
+            console.log(e);
+        });
+    }
+}
 
 //export default function start(){
 //    mongoose.connect(config.MONGO_URI, ()=>console.log("działa"));
