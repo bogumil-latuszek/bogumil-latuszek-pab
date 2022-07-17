@@ -55,7 +55,7 @@ router.post('/tag/', authMiddleware, async(req: Request, res: Response) => {
             //only accepts unique tags from authenticated users
             tag.owner_name = logged_user.name;
             tag = await tags.addTag(tag);
-            res.status(201).send({'id': tag.id })
+            res.status(201).send({'id': tag._id })
         }
     }
 })
@@ -77,7 +77,7 @@ router.put('/tag/:id', authMiddleware, async(req: Request, res: Response) => {
     else {
         if(tag.owner_name == logged_user.name ||
             logged_user.is_admin == true){
-            new_tag.id = id;
+            new_tag._id = id;
             new_tag.owner_name = tag.owner_name;
             await tags.updateTag(new_tag);
             res.status(204).send({'id': id})
@@ -128,7 +128,7 @@ async function process_single_tag(tag_name: string): Promise<Tag> {
     let tag: Tag = {name: tag_name};
     let tag_id = await tags.findTagId(tag.name);
     if (tag_id != undefined) {
-        tag.id = tag_id;
+        tag._id = tag_id;
     }
     else {
         tags.addTag(tag);

@@ -86,7 +86,7 @@ router.post('/note/',authMiddleware, async(req: Request, res: Response) => {
       }
       note.owner_name = logged_user.name;
       note = await notes.addNote(note);
-      res.status(201).send({'id': note.id })
+      res.status(201).send({'id': note._id })
   }
 })
 
@@ -103,7 +103,7 @@ router.put('/note/:id', authMiddleware, async (req: Request, res: Response) => {
     if (note.tags) {
       note.tags = await process_tags(note.tags)
     }
-    note.id = id;
+    note._id = id;
     note.owner_name = logged_user.name
     notes.updateNote(note);
     res.status(204).send({'id': id})

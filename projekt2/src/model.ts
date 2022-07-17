@@ -2,7 +2,7 @@
 export interface Note {
     private: boolean
     owner_name?: string;
-    id?: number;
+    _id?: number;
     title: string;
     content: string;
     creationDate?: string; // data w formmacie ISO
@@ -10,7 +10,7 @@ export interface Note {
   }
 
 export interface Tag {
-  id?: number;
+  _id?: number;
   name: string;
   owner_name?: string;
 }

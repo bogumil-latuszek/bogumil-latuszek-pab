@@ -97,7 +97,7 @@ class FilesNotes implements INotesAccess {
         let creation_date = new Date().toISOString();
         let id = this.gen.generate_unique_id(this.notes);
         note.creationDate = creation_date;
-        note.id = id;
+        note._id = id;
         //processing note.tags should be done before calling this method
         this.notes.set(id, note);
         this.save();
@@ -110,8 +110,8 @@ class FilesNotes implements INotesAccess {
     }
 
     async updateNote(note: Note): Promise<void> {
-        if (note.id) {
-            this.notes.set(note.id, note);
+        if (note._id) {
+            this.notes.set(note._id, note);
             this.save();
         }
         return Promise.resolve();
@@ -176,7 +176,7 @@ class FilesTags implements ITagsAccess {
         let tag_id: number | undefined = undefined;
         this.tags.forEach((tag: Tag) => {
             if (tag.name == searched_name) {
-                tag_id = tag.id;
+                tag_id = tag._id;
             }
         });
         return Promise.resolve(tag_id);
@@ -197,7 +197,7 @@ class FilesTags implements ITagsAccess {
         tag.name = tag.name.toLowerCase();
         // update incomming tag with id
         let id = this.gen.generate_unique_id(this.tags);
-        tag.id = id;
+        tag._id = id;
         this.tags.set(id, tag);
         this.save();
         return Promise.resolve(tag);
@@ -210,8 +210,8 @@ class FilesTags implements ITagsAccess {
     }
 
     updateTag(tag: Tag): Promise<void> {
-        if (tag.id) {
-            this.tags.set(tag.id, tag);
+        if (tag._id) {
+            this.tags.set(tag._id, tag);
             this.save();
         }
         return Promise.resolve();
