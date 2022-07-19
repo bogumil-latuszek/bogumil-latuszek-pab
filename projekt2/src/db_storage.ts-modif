@@ -4,41 +4,20 @@ import fs from 'fs';
 import config from './config';
 import { INotesAccess, ITagsAccess, IUsersAccess } from './idata_storage';
 import { Schema, model, connect, Model } from 'mongoose';
-import Mongo_Note from './mongo_models';
 
-let dbConnectingStarted: Boolean = false;
-
-export function setupDBConnection() {
-    if (!dbConnectingStarted) {
-        dbConnectingStarted = true;
-        connect(config.MONGO_URI)
-        .then(() => {
-            console.log("MongoDB started");
-        })
-        .catch(e => {
-            console.log(e);
-        });
-    }
+function setupDBConnection() {
+    connect(config.MONGO_URI)
+    .then(() => console.log("MongoDB started"))
+    .catch(e=>console.log(e));
 }
 
-//export default function start(){
-//    mongoose.connect(config.MONGO_URI, ()=>console.log("działa"));
-//}
-
-/*
 //schema
 const userSchema = new Schema<User>({
-    // name: String,
-    // password: String,
-    // is_admin: Boolean,
     name: { type: String, required: true },
     password: { type: String, required: true },
     is_admin: { type: Boolean, required: true },
 });
 
-// 3. Create a Model.
-const UserInDb = model<User>('UserInDb', userSchema);
-*/
 
 async function readFile(filePath: string): Promise<string> {
     try {
@@ -62,7 +41,6 @@ class DbNotes implements INotesAccess {
     notes: Map<number, Note>;
     filePath: string;
     gen: Unique_id_generator;
-    
 
     constructor() {
         this.filePath = '.db' + config.notesStoragePath;
@@ -258,54 +236,26 @@ class DbTags implements ITagsAccess {
     }
 }
 class DbUsers implements IUsersAccess {
-    users: Map<string, User>;
-    filePath: string;
+    // Create a Model.
+    users: Model<User>;
 
     constructor() {
-        this.filePath = '.db' + config.userDataStoragePath;
-        if (! fs.existsSync(this.filePath)) {
-            fs.writeFileSync(this.filePath, "{}");
-        }
-        this.users = new Map<string, User>();
-        readFile(this.filePath).then(usersUnprocessed => {
-            this.users = this.convertJsonStringToMap(usersUnprocessed);
-        });
-    }
-
-    convertMapToJsonString(users: Map<string, User>): string {
-        let jsonObject: { [k: string]: User; } = {};
-        users.forEach((value, key) => {
-            let keyAsString = key.toString();
-            jsonObject[keyAsString] = value;
-        });
-        let jsonText = JSON.stringify(jsonObject, null, 4);
-        return jsonText;
-    }
-
-    convertJsonStringToMap(jsonString: string): Map<string, User> {
-        let map = new Map<string, User>();
-        if (jsonString) {
-            let jsonObject = JSON.parse(jsonString);
-            for (var key in jsonObject) {
-                map.set(key, jsonObject[key]);
-            }
-        }
-        return map;
+        setupDBConnection();  // TODO: temporary location
+        this.users = model<User>('users', userSchema);
     }
 
     async hasUser(name: string): Promise<boolean> {
-        let has_user: boolean = this.users.has(name);
+        let has_user: boolean = false;
         return Promise.resolve(has_user)
     }
 
     async getUser(name: string): Promise<User | undefined> {
-        let user: User | undefined = this.users.get(name);
+        let user: User | undefined = undefined;
         return Promise.resolve(user);
     }
 
-    addUser(user: User): Promise<User | undefined> {
-        this.users.set(user.name, user);
-        this.save();
+    async addUser(user: User): Promise<User | undefined> {
+        const new_user = await this.users.create(user);
         return Promise.resolve(user);
     }
 
@@ -326,10 +276,10 @@ class DbUsers implements IUsersAccess {
         this.addUser_async(user).then((user:User)=>{ new User{user.name, user.password, user.is_admin}});
     }
     */
-
+    /*
     save(): void {
         let usersStringified: string = this.convertMapToJsonString(this.users);
         updateStorage(usersStringified, this.filePath);
-    }
+    }*/
 }
 export {  DbNotes, DbTags, DbUsers };
