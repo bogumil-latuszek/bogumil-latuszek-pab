@@ -59,13 +59,13 @@ async function updateStorage(dataToSave: string, filePath: string): Promise<void
 }
 
 class DbNotes implements INotesAccess {
-    notes: Map<number, Note>;
-    filePath: string;
-    gen: Unique_id_generator;
+    //notes: Map<number, Note>;
+   // filePath: string;
+   // gen: Unique_id_generator;
     
 
     constructor() {
-        this.filePath = '.db' + config.notesStoragePath;
+       /* this.filePath = '.db' + config.notesStoragePath;
         if (! fs.existsSync(this.filePath)) {
             fs.writeFileSync(this.filePath, "{}");
         }
@@ -73,10 +73,10 @@ class DbNotes implements INotesAccess {
         this.notes = new Map<number, Note>();
         readFile(this.filePath).then(notesUnprocessed => {
             this.notes = this.convertJsonStringToMap(notesUnprocessed);
-        });
+        });*/
     }
 
-    convertMapToJsonString(notes: Map<number, Note>): string {
+    /*convertMapToJsonString(notes: Map<number, Note>): string {
         let jsonObject: { [k: string]: Note; } = {};
         notes.forEach((value, key) => {
             let keyAsString = key.toString();
@@ -95,29 +95,34 @@ class DbNotes implements INotesAccess {
             }
         }
         return map;
-    }
+    }*/
 
     async hasNote(id: number): Promise<boolean> {
-        return Promise.resolve(this.notes.has(id));
+        return Promise.resolve(false);
     }
 
     async getNote(id: number): Promise<Note | undefined> {
-        let note: Note | undefined = this.notes.get(id);
-        return Promise.resolve(note);
+        //let note: Note | undefined = this.notes.get(id);
+        //return Promise.resolve(note);
+        return Mongo_Note.findOne({ id }).lean();
     }
 
     async getNotesCount(): Promise<number> {
-        return Promise.resolve(this.notes.size);
+       /* return Promise.resolve(this.notes.size);*/
+       return Promise.resolve(0);
     }
 
     async getAllNotes(): Promise<Note[]> {
-        let note_table: Note[] = [];
+       /* let note_table: Note[] = [];
         this.notes.forEach((note: Note) => note_table.push(note));
         return Promise.resolve(note_table);
+       */
+       let notes_empty: Note[] = [{private: false,  title: 'sdfdfgs',  content: 'string' }];
+        return Promise.resolve(notes_empty);
     }
 
     async getAllPublicNotes(userName: string): Promise<Note[]> {
-        let note_table: Note[] = await this.getAllNotes();
+        /*let note_table: Note[] = await this.getAllNotes();
         let note_table_public: Note[] = [];
         note_table.forEach((note: Note) => {
             if (note.private == false &&
@@ -126,35 +131,41 @@ class DbNotes implements INotesAccess {
             }
         });
         return Promise.resolve(note_table_public);
+        */
+        let notes_empty: Note[] = [{private: false,  title: 'sdfdfgs',  content: 'string' }];
+        return Promise.resolve(notes_empty);
     }
 
     async addNote(note: Note): Promise<Note> {
         // update incomming note with creationDate and id fields
         let creation_date = new Date().toISOString();
-        let id = this.gen.generate_unique_id(this.notes);
         note.creationDate = creation_date;
-        note._id = id;
         //processing note.tags should be done before calling this method
-        this.notes.set(id, note);
-        this.save();
-        return Promise.resolve(note);
+        //this.notes.set(id, note);
+        //this.save();
+        //return Promise.resolve(note);
+        return Mongo_Note.create(note);
     }
 
-    save(): void {
+    /*save(): void {
         let notesStringified: string = this.convertMapToJsonString(this.notes);
         updateStorage(notesStringified, this.filePath);
     }
+    */
 
     async updateNote(note: Note): Promise<void> {
-        if (note._id) {
+        /*if (note._id) {
             this.notes.set(note._id, note);
             Promise.resolve(this.save());
-        }
+        }*/
+        return Promise.resolve();
     }
 
     async deleteNote(id: number): Promise<void> {
-        this.notes.delete(id);
+        /*this.notes.delete(id);
         Promise.resolve(this.save());
+        */
+        return Promise.resolve();
     }
 }
 class DbTags implements ITagsAccess {
