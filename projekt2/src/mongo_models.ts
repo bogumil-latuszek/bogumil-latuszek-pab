@@ -13,7 +13,15 @@ const NoteSchema = new Schema<Note>({
     tags:  { type: String, required: false } //???
 });
 
-// 3. Create a Model.
-const Mongo_Note: Model<Note> = model<Note>('Task', NoteSchema);
+const UserSchema = new Schema<User>({
+    // _id is auto-populated by mongoose
+    name:  { type: String, required: true },
+    password:  { type: String, required: true },
+    is_admin:  { type: Boolean, required: true }
+});
 
-export default Mongo_Note;
+// 3. Create a Model.
+const Mongo_Note: Model<Note> = model<Note>('Note', NoteSchema);
+const Mongo_User: Model<User> = model<User>('User', UserSchema);
+
+export {Mongo_Note, Mongo_User};

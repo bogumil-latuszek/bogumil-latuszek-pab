@@ -259,8 +259,8 @@ class FilesUsers implements IUsersAccess {
         return map;
     }
 
-    async hasUser(name: string): Promise<boolean> {
-        let has_user: boolean = this.users.has(name);
+    async hasUser(_name: string): Promise<boolean> {
+        let has_user: boolean = this.users.has(_name);
         return Promise.resolve(has_user)
     }
 

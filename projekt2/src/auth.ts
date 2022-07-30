@@ -30,7 +30,7 @@ function validateToken(token: string): UserInfo {
     const verifyOptions: VerifyOptions = {
         algorithms: ['HS256'],
     };
-    const decoded = verify(token, config.JWT_SECRET, verifyOptions);
+    const decoded = verify(token, config.JWT_SECRET, verifyOptions); //here it throws error "token expired"
     let authenticated: UserInfo = (decoded as UserInfo);
     return authenticated;
 }

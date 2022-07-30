@@ -4,7 +4,7 @@ import fs from 'fs';
 import config from './config';
 import { INotesAccess, ITagsAccess, IUsersAccess } from './idata_storage';
 import { Schema, model, connect, Model } from 'mongoose';
-import Mongo_Note from './mongo_models';
+import {Mongo_Note , Mongo_User} from './mongo_models';
 
 let dbConnectingStarted: Boolean = false;
 
@@ -65,40 +65,12 @@ class DbNotes implements INotesAccess {
     
 
     constructor() {
-       /* this.filePath = '.db' + config.notesStoragePath;
-        if (! fs.existsSync(this.filePath)) {
-            fs.writeFileSync(this.filePath, "{}");
-        }
-        this.gen = new Unique_id_generator();
-        this.notes = new Map<number, Note>();
-        readFile(this.filePath).then(notesUnprocessed => {
-            this.notes = this.convertJsonStringToMap(notesUnprocessed);
-        });*/
-    }
 
-    /*convertMapToJsonString(notes: Map<number, Note>): string {
-        let jsonObject: { [k: string]: Note; } = {};
-        notes.forEach((value, key) => {
-            let keyAsString = key.toString();
-            jsonObject[keyAsString] = value;
-        });
-        let jsonText = JSON.stringify(jsonObject, null, 4);
-        return jsonText;
     }
-
-    convertJsonStringToMap(jsonString: string): Map<number, Note> {
-        let map = new Map<number, Note>();
-        if (jsonString) {
-            let jsonObject = JSON.parse(jsonString);
-            for (var key in jsonObject) {
-                map.set(+key, jsonObject[key]);
-            }
-        }
-        return map;
-    }*/
 
     async hasNote(id: number): Promise<boolean> {
-        return Promise.resolve(false);
+        if(Mongo_Note.exists({ _id : id}) == undefined){return Promise.resolve(false);}
+        else{return Promise.resolve(true)};
     }
 
     async getNote(id: number): Promise<Note | undefined> {
@@ -109,7 +81,7 @@ class DbNotes implements INotesAccess {
 
     async getNotesCount(): Promise<number> {
        /* return Promise.resolve(this.notes.size);*/
-       return Promise.resolve(0);
+       return Promise.resolve(Mongo_Note.countDocuments())
     }
 
     async getAllNotes(): Promise<Note[]> {
@@ -117,7 +89,8 @@ class DbNotes implements INotesAccess {
         this.notes.forEach((note: Note) => note_table.push(note));
         return Promise.resolve(note_table);
        */
-       let notes_empty: Note[] = [{private: false,  title: 'sdfdfgs',  content: 'string' }];
+        let notes_empty =  Mongo_Note.find({}); //is this of Note[] type?
+        //let notes_empty: Note[] = [{private: false,  title: 'sdfdfgs',  content: 'string' }];
         return Promise.resolve(notes_empty);
     }
 
@@ -132,7 +105,8 @@ class DbNotes implements INotesAccess {
         });
         return Promise.resolve(note_table_public);
         */
-        let notes_empty: Note[] = [{private: false,  title: 'sdfdfgs',  content: 'string' }];
+        let notes_empty =  Mongo_Note.find({ private : false}); //is this of Note[] type?
+        //let notes_empty: Note[] = [{private: false,  title: 'sdfdfgs',  content: 'string' }];
         return Promise.resolve(notes_empty);
     }
 
@@ -140,24 +114,32 @@ class DbNotes implements INotesAccess {
         // update incomming note with creationDate and id fields
         let creation_date = new Date().toISOString();
         note.creationDate = creation_date;
-        //processing note.tags should be done before calling this method
-        //this.notes.set(id, note);
-        //this.save();
-        //return Promise.resolve(note);
         return Mongo_Note.create(note);
     }
-
-    /*save(): void {
-        let notesStringified: string = this.convertMapToJsonString(this.notes);
-        updateStorage(notesStringified, this.filePath);
-    }
-    */
 
     async updateNote(note: Note): Promise<void> {
         /*if (note._id) {
             this.notes.set(note._id, note);
             Promise.resolve(this.save());
         }*/
+        let id = note._id;
+        //let retrived_node : Note | undefined = await this.getNote(id);
+        let retrived_node = await Mongo_Note.findOne({ id });
+        if(retrived_node == undefined){
+
+        }
+        else{
+            // przepisz/nadgraj pola
+            retrived_node.content = note.content; //note has to have "content" field since it is validated as Note type
+            retrived_node.private = note.private;
+            retrived_node.title = note.title;
+            //if(retrived_node.hasOwnProperty('owner_name')){retrived_node.title = note.title;}
+            retrived_node.tags = note.tags;
+            //owner_name, creation date and _id shouldnt be changed
+            await retrived_node.save();
+
+        }
+
         return Promise.resolve();
     }
 
@@ -165,6 +147,8 @@ class DbNotes implements INotesAccess {
         /*this.notes.delete(id);
         Promise.resolve(this.save());
         */
+        let retrived_node = await Mongo_Note.findOne({ id });
+        retrived_node?.deleteOne({_id: id})
         return Promise.resolve();
     }
 }
@@ -269,78 +253,26 @@ class DbTags implements ITagsAccess {
     }
 }
 class DbUsers implements IUsersAccess {
-    users: Map<string, User>;
-    filePath: string;
 
     constructor() {
-        this.filePath = '.db' + config.userDataStoragePath;
-        if (! fs.existsSync(this.filePath)) {
-            fs.writeFileSync(this.filePath, "{}");
-        }
-        this.users = new Map<string, User>();
-        readFile(this.filePath).then(usersUnprocessed => {
-            this.users = this.convertJsonStringToMap(usersUnprocessed);
-        });
     }
 
-    convertMapToJsonString(users: Map<string, User>): string {
-        let jsonObject: { [k: string]: User; } = {};
-        users.forEach((value, key) => {
-            let keyAsString = key.toString();
-            jsonObject[keyAsString] = value;
-        });
-        let jsonText = JSON.stringify(jsonObject, null, 4);
-        return jsonText;
-    }
-
-    convertJsonStringToMap(jsonString: string): Map<string, User> {
-        let map = new Map<string, User>();
-        if (jsonString) {
-            let jsonObject = JSON.parse(jsonString);
-            for (var key in jsonObject) {
-                map.set(key, jsonObject[key]);
-            }
-        }
-        return map;
-    }
-
-    async hasUser(name: string): Promise<boolean> {
-        let has_user: boolean = this.users.has(name);
-        return Promise.resolve(has_user)
+    async hasUser(_name: string): Promise<boolean> {
+        let existing_doc = await Mongo_User.find({ name : _name});
+        if (existing_doc){
+            return Promise.resolve(true);
+        }   //empty array should give false
+        else {
+            return Promise.resolve(false)
+        };
     }
 
     async getUser(name: string): Promise<User | undefined> {
-        let user: User | undefined = this.users.get(name);
-        return Promise.resolve(user);
+        return Mongo_User.findOne({ name }).lean();
     }
 
     addUser(user: User): Promise<User | undefined> {
-        this.users.set(user.name, user);
-        this.save();
-        return Promise.resolve(user);
-    }
-
-    /*
-    async addUser_async(user: User): Promise<User> {
-        let name: String = user.name;
-        let password: String = user.password;
-        let is_admin: Boolean = user.is_admin;
-        const userInDb = await  UserInDb.create({
-            name,
-            password,
-            is_admin,
-        });
-        return user
-    }
-
-    addUser(user: User): User{
-        this.addUser_async(user).then((user:User)=>{ new User{user.name, user.password, user.is_admin}});
-    }
-    */
-
-    save(): void {
-        let usersStringified: string = this.convertMapToJsonString(this.users);
-        updateStorage(usersStringified, this.filePath);
+        return Mongo_User.create(user);
     }
 }
 export {  DbNotes, DbTags, DbUsers };
