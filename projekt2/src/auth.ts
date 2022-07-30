@@ -20,7 +20,7 @@ function generateToken(user: User) {
     };
     const signInOptions: SignOptions = {
         algorithm: 'HS256',
-        expiresIn: '5m'
+        expiresIn: '25m'
     };
     // generate JWT
     return sign(payload, config.JWT_SECRET, signInOptions);

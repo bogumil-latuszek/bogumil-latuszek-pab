@@ -81,7 +81,7 @@ class DbNotes implements INotesAccess {
 
     async getNotesCount(): Promise<number> {
        /* return Promise.resolve(this.notes.size);*/
-       return Promise.resolve(Mongo_Note.countDocuments())
+       return Mongo_Note.countDocuments({});
     }
 
     async getAllNotes(): Promise<Note[]> {
@@ -113,6 +113,8 @@ class DbNotes implements INotesAccess {
     async addNote(note: Note): Promise<Note> {
         // update incomming note with creationDate and id fields
         let creation_date = new Date().toISOString();
+        // see: https://stackoverflow.com/questions/45952928/mongodb-error-document-must-have-an-id-before-saving
+        // let id = new Schema.Types.ObjectId();
         note.creationDate = creation_date;
         return Mongo_Note.create(note);
     }

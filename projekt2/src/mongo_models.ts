@@ -6,7 +6,7 @@ const NoteSchema = new Schema<Note>({
     // _id is auto-populated by mongoose
     private:  { type: Boolean, required: true },
     owner_name: { type: String, required: false },
-    _id: { type: Number, required: false },
+    //_id: { type: Number, required: false },
     title: { type: String, required: true },
     content: { type: String, required: true },
     creationDate: { type: String, required: false }, // data w formmacie ISO
