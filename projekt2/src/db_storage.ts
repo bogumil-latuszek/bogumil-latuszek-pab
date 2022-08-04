@@ -4,7 +4,7 @@ import fs from 'fs';
 import config from './config';
 import { INotesAccess, ITagsAccess, IUsersAccess } from './idata_storage';
 import { Schema, model, connect, Model } from 'mongoose';
-import {Mongo_Note , Mongo_User} from './mongo_models';
+import {Mongo_Note , Mongo_User, Mongo_Tag} from './mongo_models';
 
 let dbConnectingStarted: Boolean = false;
 
@@ -59,10 +59,6 @@ async function updateStorage(dataToSave: string, filePath: string): Promise<void
 }
 
 class DbNotes implements INotesAccess {
-    //notes: Map<number, Note>;
-   // filePath: string;
-   // gen: Unique_id_generator;
-    
 
     constructor() {
 
@@ -74,39 +70,20 @@ class DbNotes implements INotesAccess {
     }
 
     async getNote(id: number): Promise<Note | undefined> {
-        //let note: Note | undefined = this.notes.get(id);
-        //return Promise.resolve(note);
         return Mongo_Note.findOne({ id }).lean();
     }
 
     async getNotesCount(): Promise<number> {
-       /* return Promise.resolve(this.notes.size);*/
        return Mongo_Note.countDocuments({});
     }
 
     async getAllNotes(): Promise<Note[]> {
-       /* let note_table: Note[] = [];
-        this.notes.forEach((note: Note) => note_table.push(note));
-        return Promise.resolve(note_table);
-       */
         let notes_empty =  Mongo_Note.find({}); //is this of Note[] type?
-        //let notes_empty: Note[] = [{private: false,  title: 'sdfdfgs',  content: 'string' }];
         return Promise.resolve(notes_empty);
     }
 
     async getAllPublicNotes(userName: string): Promise<Note[]> {
-        /*let note_table: Note[] = await this.getAllNotes();
-        let note_table_public: Note[] = [];
-        note_table.forEach((note: Note) => {
-            if (note.private == false &&
-                note.owner_name == userName) {
-                note_table_public.push(note);
-            }
-        });
-        return Promise.resolve(note_table_public);
-        */
         let notes_empty =  Mongo_Note.find({ private : false}); //is this of Note[] type?
-        //let notes_empty: Note[] = [{private: false,  title: 'sdfdfgs',  content: 'string' }];
         return Promise.resolve(notes_empty);
     }
 
@@ -120,12 +97,7 @@ class DbNotes implements INotesAccess {
     }
 
     async updateNote(note: Note): Promise<void> {
-        /*if (note._id) {
-            this.notes.set(note._id, note);
-            Promise.resolve(this.save());
-        }*/
         let id = note._id;
-        //let retrived_node : Note | undefined = await this.getNote(id);
         let retrived_node = await Mongo_Note.findOne({ id });
         if(retrived_node == undefined){
 
@@ -146,111 +118,82 @@ class DbNotes implements INotesAccess {
     }
 
     async deleteNote(id: number): Promise<void> {
-        /*this.notes.delete(id);
-        Promise.resolve(this.save());
-        */
         let retrived_node = await Mongo_Note.findOne({ id });
         retrived_node?.deleteOne({_id: id})
         return Promise.resolve();
     }
 }
 class DbTags implements ITagsAccess {
-    tags: Map<number, Tag>;
-    filePath: string;
-    gen: Unique_id_generator;
 
     constructor() {
-        this.filePath = '.db' + config.tagsStoragePath;
-        if (! fs.existsSync(this.filePath)) {
-            fs.writeFileSync(this.filePath, "{}");
+
+    }
+
+    async hasTag(id: number): Promise<boolean> {
+        if (Mongo_Tag.exists({ _id : id}) == undefined){
+            return Promise.resolve(false);
         }
-        this.gen = new Unique_id_generator();
-        this.tags = new Map<number, Tag>();
-        readFile(this.filePath).then(tagsUnprocessed => {
-            this.tags = this.convertJsonStringToMap(tagsUnprocessed);
-        });
+        else{
+            return Promise.resolve(true)
+        };
+    }
+    async getTag(id: number): Promise<Tag | undefined> {
+        return Mongo_Tag.findOne({id}).lean();
     }
 
-    convertMapToJsonString(tags: Map<number, Tag>): string {
-        let jsonObject: { [k: string]: Tag; } = {};
-        tags.forEach((value, key) => {
-            let keyAsString = key.toString();
-            jsonObject[keyAsString] = value;
-        });
-        let jsonText = JSON.stringify(jsonObject, null, 4);
-        return jsonText;
-    }
-
-    convertJsonStringToMap(jsonString: string): Map<number, Tag> {
-        let map = new Map<number, Tag>();
-        if (jsonString) {
-            let jsonObject = JSON.parse(jsonString);
-            for (var key in jsonObject) {
-                map.set(+key, jsonObject[key]);
-            }
-        }
-        return map;
-    }
-
-    hasTag(id: number): Promise<boolean> {
-        return Promise.resolve(this.tags.has(id));
-    }
-
-    getTag(id: number): Promise<Tag | undefined> {
-        let tag: Tag | undefined = this.tags.get(id);
-        return Promise.resolve(tag);
-    }
-
-    findTagId(name: string): Promise<number | undefined> {
+    async findTagId(name: string): Promise<number | undefined> {
         // tag is always lowercase
         let searched_name: string = name.toLowerCase();
         let tag_id: number | undefined = undefined;
-        this.tags.forEach((tag: Tag) => {
-            if (tag.name == searched_name) {
-                tag_id = tag._id;
-            }
-        });
-        return Promise.resolve(tag_id);
+        let foundTag = await Mongo_Tag.findOne({name});;
+        if(foundTag != undefined){
+            let tag_id : number | undefined = foundTag.toJSON()._id
+            return Promise.resolve(tag_id);
+        }
+        else{
+            return Promise.resolve(undefined);
+        }
     }
 
-    getTagsCount():  Promise<number> {
-        return Promise.resolve(this.tags.size);
+    async getTagsCount():  Promise<number> {
+        return Mongo_Tag.countDocuments({});
     }
 
-    getAllTags(): Promise<Tag[]> {
-        let tag_table: Tag[] = [];
-        this.tags.forEach((tag: Tag) => tag_table.push(tag));
-        return Promise.resolve(tag_table);
+    async getAllTags(): Promise<Tag[]> {
+        let tags_empty =  Mongo_Tag.find({}); //is this of Note[] type?
+        return Promise.resolve(tags_empty);
     }
 
-    addTag(tag: Tag): Promise<Tag> {
+    async addTag(tag: Tag): Promise<Tag> {
         // tag is always lowercase
         tag.name = tag.name.toLowerCase();
-        // update incomming tag with id
-        let id = this.gen.generate_unique_id(this.tags);
-        tag._id = id;
-        this.tags.set(id, tag);
-        this.save();
-        return Promise.resolve(tag);
+        return Mongo_Note.create(tag);
     }
-
+    
     save(): Promise<void> {
-        let tagsStringified: string = this.convertMapToJsonString(this.tags);
-        updateStorage(tagsStringified, this.filePath);
         return Promise.resolve();
     }
 
-    updateTag(tag: Tag): Promise<void> {
-        if (tag._id) {
-            this.tags.set(tag._id, tag);
-            this.save();
+    async updateTag(tag: Tag): Promise<void> {
+        
+        let id = tag._id;
+        let retrived_tag = await Mongo_Tag.findOne({ id });
+        if(retrived_tag == undefined){ 
+
         }
+        else{ //if tag which we want to update exists
+            let id_of_tag_that_has_this_name = await this.findTagId(tag.name);
+            if (id_of_tag_that_has_this_name == undefined){//if new name for it isn't already taken
+                retrived_tag.name = tag.name;
+            }
+        }
+
         return Promise.resolve();
     }
 
-    deleteTag(id: number): Promise<void> {
-        this.tags.delete(id);
-        this.save();
+    async deleteTag(id: number): Promise<void> {
+        let retrived_tag = await Mongo_Tag.findOne({ id });
+        retrived_tag?.deleteOne({_id: id})
         return Promise.resolve();
     }
 }
