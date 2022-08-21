@@ -1,5 +1,5 @@
 import { Schema, model, Model } from 'mongoose';
-import { Note, Tag, User, UserInfo} from './model.js';  // 1. interface representing a document in MongoDB.
+import { Note, Tag, User, NotesTags, UserInfo} from './model.js';  // 1. interface representing a document in MongoDB.
 
 // 2. Create a Schema corresponding to the document interface.
 const NoteSchema = new Schema<Note>({
@@ -8,8 +8,7 @@ const NoteSchema = new Schema<Note>({
     owner_name: { type: String, required: false },
     title: { type: String, required: true },
     content: { type: String, required: true },
-    creationDate: { type: String, required: false }, // data w formmacie ISO
-    tags:  { type: String, required: false } //???
+    creationDate: { type: String, required: false }//, // data w formmacie ISO
 });
 
 const UserSchema = new Schema<User>({
@@ -25,9 +24,17 @@ const TagSchema = new Schema<Tag>({
     owner_name: { type: String, required: false }
 });
 
+const NotesTagsSchema = new Schema<NotesTags>({
+    // _id is auto-populated by mongoose
+    note_id: { type: String, required: true },
+    tag_id: { type: String, required: true }
+});
+
+
 // 3. Create a Model.
 const Mongo_Note: Model<Note> = model<Note>('Note', NoteSchema);
 const Mongo_User: Model<User> = model<User>('User', UserSchema);
 const Mongo_Tag: Model<Tag> = model<Tag>('Tag', TagSchema);
+const Mongo_Notes_Tags: Model<NotesTags> = model<NotesTags>('NotesTags', NotesTagsSchema); //app crushes when i add here breakpoint
 
-export {Mongo_Note, Mongo_User, Mongo_Tag};
+export {Mongo_Note, Mongo_User, Mongo_Tag, Mongo_Notes_Tags};

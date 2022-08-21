@@ -60,13 +60,15 @@ class FilesNotes implements INotesAccess {
         return map;
     }
 
-    async hasNote(id: number): Promise<boolean> {
-        return Promise.resolve(this.notes.has(id));
+    async hasNote(id: string): Promise<boolean> {
+        let _id = +id
+        return Promise.resolve(this.notes.has(_id));
         
     }
 
-    async getNote(id: number): Promise<Note | undefined> {
-        let note: Note | undefined = this.notes.get(id);
+    async getNote(id: string): Promise<Note | undefined> {
+        let _id = +id
+        let note: Note | undefined = this.notes.get(_id);
         return Promise.resolve(note);
     }
 
@@ -97,7 +99,7 @@ class FilesNotes implements INotesAccess {
         let creation_date = new Date().toISOString();
         let id = this.gen.generate_unique_id(this.notes);
         note.creationDate = creation_date;
-        note._id = id;
+        note._id = id.toString();
         //processing note.tags should be done before calling this method
         this.notes.set(id, note);
         this.save();
@@ -111,14 +113,14 @@ class FilesNotes implements INotesAccess {
 
     async updateNote(note: Note): Promise<void> {
         if (note._id) {
-            this.notes.set(note._id, note);
+            this.notes.set(+note._id, note);
             this.save();
         }
         return Promise.resolve();
     }
 
-    async deleteNote(id: number): Promise<void> {
-        this.notes.delete(id);
+    async deleteNote(id: string): Promise<void> {
+        this.notes.delete(+id);
         this.save();
         return Promise.resolve()
     }
@@ -161,19 +163,19 @@ class FilesTags implements ITagsAccess {
         return map;
     }
 
-    hasTag(id: number): Promise<boolean> {
-        return Promise.resolve(this.tags.has(id));
+    hasTag(id: string): Promise<boolean> {
+        return Promise.resolve(this.tags.has(+id));
     }
 
-    getTag(id: number): Promise<Tag | undefined> {
-        let tag: Tag | undefined = this.tags.get(id);
+    getTag(id: string): Promise<Tag | undefined> {
+        let tag: Tag | undefined = this.tags.get(+id);
         return Promise.resolve(tag);
     }
 
-    findTagId(name: string): Promise<number | undefined> {
+    findTagId(name: string): Promise<string | undefined> {
         // tag is always lowercase
         let searched_name: string = name.toLowerCase();
-        let tag_id: number | undefined = undefined;
+        let tag_id: string | undefined = undefined;
         this.tags.forEach((tag: Tag) => {
             if (tag.name == searched_name) {
                 tag_id = tag._id;
@@ -197,7 +199,7 @@ class FilesTags implements ITagsAccess {
         tag.name = tag.name.toLowerCase();
         // update incomming tag with id
         let id = this.gen.generate_unique_id(this.tags);
-        tag._id = id;
+        tag._id = id.toString();
         this.tags.set(id, tag);
         this.save();
         return Promise.resolve(tag);
@@ -211,17 +213,26 @@ class FilesTags implements ITagsAccess {
 
     updateTag(tag: Tag): Promise<void> {
         if (tag._id) {
-            this.tags.set(tag._id, tag);
+            this.tags.set(+tag._id, tag);
             this.save();
         }
         return Promise.resolve();
     }
 
-    deleteTag(id: number): Promise<void> {
-        this.tags.delete(id);
+    deleteTag(id: string): Promise<void> {
+        this.tags.delete(+id);
         this.save();
         return Promise.resolve();
     }
+
+    async addNotesTags(note_id : string, tags_ids: string[]): Promise<void>{ //its a prop: this doesnt do anything
+        return Promise.resolve(); 
+    }
+    async findNotesTags(note_id : string): Promise<string[]>{  //its a prop: this doesnt do anything
+        let temp_result : string[] = ["data_storage has no implamentation for this"];
+        return Promise.resolve(temp_result);
+    }
+
 }
 class FilesUsers implements IUsersAccess {
     users: Map<string, User>;

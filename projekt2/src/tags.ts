@@ -22,7 +22,7 @@ router.get('/tags/', async (req: Request, res: Response) => {
 })
 
 router.get('/tag/:id', async(req: Request, res: Response) => {
-    let id = +req.params.id
+    let id = req.params.id
     if (await tags.hasTag(id)) {
         let tag = await tags.getTag(id);
         res.status(200).send(tag)
@@ -64,7 +64,7 @@ router.put('/tag/:id', authMiddleware, async(req: Request, res: Response) => {
     let logged_user: UserInfo = req.body.user;
     delete req.body.user;
     let new_tag: Tag = req.body;
-    let id = +req.params.id;
+    let id = req.params.id;
     if (await !tags.hasTag(id)) {
         res.status(404).send({'err': 'tag with this id not found'})
     }
@@ -95,7 +95,7 @@ router.put('/tag/:id', authMiddleware, async(req: Request, res: Response) => {
 })
 
 router.delete('/tag/:id', authMiddleware, async(req: Request, res: Response) => {
-    let id = +req.params.id;
+    let id = req.params.id;
     let logged_user: UserInfo = req.body.user;
     if (await !tags.hasTag(id)) {
         res.status(404).send({'err': 'tag with this id not found'})
@@ -134,4 +134,13 @@ async function process_single_tag(tag_name: string): Promise<Tag> {
         tags.addTag(tag);
     }
     return Promise.resolve(tag);
+}
+
+export async function addNotesTags(note_id: string, tags_ids: string[]): Promise<void> {
+    tags.addNotesTags(note_id, tags_ids);
+    return Promise.resolve();
+}
+
+export async function findNotesTags(note_id: string): Promise<string[]> {
+    return  tags.findNotesTags(note_id);
 }
